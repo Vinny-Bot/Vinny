@@ -25,9 +25,7 @@ def create_moderation_table():
 create_moderation_table()
 
 def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation_type: str, severity: str, time: str, duration: str):
-	print("Los gringos")
 	try:
-		print("Gringo")
 		conn = sqlite3.connect(database)
 		c = conn.cursor()
 		
@@ -36,13 +34,10 @@ def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation
 		result = c.fetchone()
 		case_id = 1 if result[0] == None else result[0] + 1
 		print(case_id)
-		print("Casablanca")
 		
 		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration, active)
 					VALUES (?,?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration, True))
-		print("SIUU")
 		conn.commit()
-		print("Pendu")
 		conn.close()
 		return case_id
 	except Exception as e:
