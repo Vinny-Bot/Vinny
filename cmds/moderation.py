@@ -6,28 +6,7 @@ import time
 import re
 import datetime
 from typing import Literal
-
-def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then to a timedelta
-	pattern = r"(\d+)([mh]?)"
-	match = re.search(pattern, duration_str)
-	if match:
-		num, unit = match.groups()
-		if unit == 's':
-			factor = 1
-		elif unit == 'm':
-			factor = 60
-		elif unit == 'h':
-			factor = 3600
-		elif unit == 'd':
-			factor = 86400
-		else:
-			factor = 1
-		
-		total_seconds = float(num) * factor
-		
-		return datetime.timedelta(seconds=total_seconds)
-	else:
-		raise ValueError(f"Invalid duration format: {duration_str}")
+from utils import utils
 
 class moderation(commands.Cog):
 	@app_commands.command()
@@ -41,7 +20,7 @@ class moderation(commands.Cog):
 			guild_id = interaction.guild.id
 			user_id = victim.id
 			moderator_id = interaction.user.id
-			duration_delta = parse_duration(duration)
+			duration_delta = utils.parse_duration(duration)
 			await victim.timeout(duration_delta, reason=f"{reason} - {interaction.user.name}", )
 			await interaction.response.send_message(f"Moderation `{db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type=reason, severity=severity, duration=duration, time=str(time.time()))}`: Muted <@{user_id}> for {duration}: **{severity}. {reason}**")
 		except Exception as e:
