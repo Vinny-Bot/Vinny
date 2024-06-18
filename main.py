@@ -13,17 +13,21 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-# This example requires the 'message_content' intent.
 
 import discord
+import os
+import asyncio
 from discord import app_commands
 from discord.ext import commands
+from pathlib import Path
 import sys
 
+base_dir = Path(__file__).resolve().parent
+
 if sys.version_info >= (3, 11): # compat with older python (you'll need to install tomli from pip though)
-    import tomllib
+	import tomllib
 else:
-    import tomli as tomllib
+	import tomli as tomllib
 
 bot = commands.Bot(command_prefix="pak!", intents=discord.Intents.all())
 tree = bot.tree
@@ -51,8 +55,15 @@ async def on_ready():
 	except Exception:
 		print(Exception)
 
-@tree.command(name="test")
-async def test(interaction: discord.Interaction):
-	await interaction.response.send_message("Test")
+async def loadcmds():
+	command_path = base_dir / 'cmds'
+	for files in os.listdir(command_path):
+		if files.endswith(".py"):
+			await bot.load_extension(f'cmds.{files[:-3]}')
 
-bot.run(token)
+async def init():
+	async with bot:
+		await loadcmds()	
+		await bot.start(token)
+
+asyncio.run(init())
