@@ -15,7 +15,8 @@ def create_moderation_table():
 						moderation_type TEXT,
 						severity TEXT,
 						time TEXT,
-						duration INTEGER
+						duration INTEGER,
+		   				active BOOLEAN
 					)''')
 
 	conn.commit()
@@ -37,8 +38,8 @@ def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation
 		print(case_id)
 		print("Casablanca")
 		
-		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration)
-					VALUES (?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration))
+		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration, active)
+					VALUES (?,?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, severity, time, duration, True))
 		print("SIUU")
 		conn.commit()
 		print("Pendu")
