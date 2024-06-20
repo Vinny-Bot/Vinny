@@ -15,6 +15,7 @@ class moderation(commands.Cog):
 	@app_commands.describe(duration="Time of mute (eg: 1s for 1 second, 1m for 1 minute, 1h for 1 hour, 1d for 1 day.)")
 	@app_commands.describe(reason="Reason of mute")
 	@app_commands.rename(victim='member')
+	@app_commands.checks.has_permissions(moderate_members=True)
 	async def mute(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S2', 'N/A'], duration: str, reason: str):
 		try:
 			guild_id = interaction.guild.id
@@ -33,6 +34,7 @@ class moderation(commands.Cog):
 	@app_commands.describe(reason="Reason of ban")
 	@app_commands.describe(purge="Purge all messages within 7 days")
 	@app_commands.rename(victim='member')
+	@app_commands.checks.has_permissions(ban_members=True)
 	async def ban(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S3', 'S4'], duration: str, reason: str, purge: Literal['No', 'Yes']):
 		try:
 			guild_id = interaction.guild.id
@@ -50,6 +52,7 @@ class moderation(commands.Cog):
 	@app_commands.describe(severity="Type of sanction")
 	@app_commands.describe(reason="Reason of warn")
 	@app_commands.rename(victim='member')
+	@app_commands.checks.has_permissions(moderate_members=True)
 	async def warn(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S1', 'N/A'], reason: str):
 		try:
 			guild_id = interaction.guild.id
