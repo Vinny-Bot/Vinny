@@ -114,3 +114,18 @@ def set_moderation_inactive(moderation_id):
 	c.execute('UPDATE moderations SET active=0 WHERE moderation_id=?', (moderation_id,))
 	conn.commit()
 	conn.close()
+
+def set_log_channel(guild_id: int, channel_id: int):
+	conn = sqlite3.connect(database)
+	c = conn.cursor()
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id) VALUES (?, ?)', (guild_id, channel_id))
+	conn.commit()
+	conn.close()
+
+def get_log_channel(guild_id: int):
+	conn = sqlite3.connect(database)
+	c = conn.cursor()
+	c.execute('SELECT log_channel_id FROM guilds WHERE guild_id=?', (guild_id,))
+	log_channel = c.fetchone()[0]
+	conn.close()
+	return log_channel
