@@ -16,6 +16,7 @@
 
 import re
 import datetime
+import discord
 
 def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then to a timedelta
 	pattern = r"(\d+)([mh]?)"
@@ -38,3 +39,21 @@ def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then 
 		return datetime.timedelta(seconds=total_seconds)
 	else:
 		raise ValueError(f"Invalid duration format: {duration_str}")
+
+def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str):
+	if moderation_type == "Warn":
+		if moderator.guild_permissions.moderate_members is True:
+			if victim.guild_permissions.moderate_members is True:
+				return False
+	elif moderation_type == "Mute":
+		if moderator.guild_permissions.moderate_members is True:
+			if victim.guild_permissions.moderate_members is True:
+				return False
+	elif moderation_type == "Ban":
+		if moderator.guild_permissions.ban_members is True:
+			if victim.guild_permissions.ban_members is True:
+				return False
+	if moderator.id == victim:
+		return False
+	else:
+		return True

@@ -46,7 +46,8 @@ def create_guilds_table():
 
 	c.execute('''CREATE TABLE IF NOT EXISTS guilds (
 					guild_id INTEGER PRIMARY KEY,
-					log_channel_id INTEGER DEFAULT NULL
+					log_channel_id INTEGER DEFAULT NULL,
+					event_log_channel_id INTEGER DEFAULT NULL
 				)''')
 
 	conn.commit()
@@ -87,6 +88,7 @@ def get_active_tempbans(): # this gave me a headache, TLDR: checks for "active" 
 	c.execute("SELECT moderation_id, time, duration FROM moderations WHERE severity='S3' AND active=true")
 	results = []
 	for row in c.fetchall():
+		print(row)
 		moderation_id = row[0]
 		time_unix = float(row[1])
 		duration_str = row[2]
@@ -118,7 +120,14 @@ def set_moderation_inactive(moderation_id):
 def set_log_channel(guild_id: int, channel_id: int):
 	conn = sqlite3.connect(database)
 	c = conn.cursor()
-	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id) VALUES (?, ?)', (guild_id, channel_id))
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, channel_id, get_event_log_channel(guild_id)))
+	conn.commit()
+	conn.close()
+
+def set_event_log_channel(guild_id: int, channel_id: int):
+	conn = sqlite3.connect(database)
+	c = conn.cursor()
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, get_log_channel(guild_id), channel_id))
 	conn.commit()
 	conn.close()
 
@@ -126,6 +135,14 @@ def get_log_channel(guild_id: int):
 	conn = sqlite3.connect(database)
 	c = conn.cursor()
 	c.execute('SELECT log_channel_id FROM guilds WHERE guild_id=?', (guild_id,))
+	log_channel = c.fetchone()[0]
+	conn.close()
+	return log_channel
+
+def get_event_log_channel(guild_id: int):
+	conn = sqlite3.connect(database)
+	c = conn.cursor()
+	c.execute('SELECT event_log_channel_id FROM guilds WHERE guild_id=?', (guild_id,))
 	log_channel = c.fetchone()[0]
 	conn.close()
 	return log_channel
