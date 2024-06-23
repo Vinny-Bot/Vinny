@@ -22,7 +22,7 @@ import utils.info as info
 import utils.db as db
 
 class misc(commands.Cog):
-	@app_commands.command()
+	@app_commands.command(description="Host information")
 	async def host_info(self,interaction: discord.Interaction):
 		try:
 			embed = discord.Embed(title="Host Information", color=16711680)

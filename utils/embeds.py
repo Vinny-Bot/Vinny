@@ -66,9 +66,9 @@ async def dm_moderation_embed(guild: discord.Guild, victim: discord.User | disco
 		embed.add_field(name="Severity", value=f"{severity}", inline=False)
 		if severity == "S2" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
-		try:
-			guild_icon = await guild.icon
-		except Exception:
+		if guild.icon is not None:
+			guild_icon = guild.icon
+		else:
 			guild_icon = "https://cdn.discordapp.com/embed/avatars/1.png"
 		embed.set_thumbnail(url=guild_icon)
 		return embed

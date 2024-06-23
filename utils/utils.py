@@ -19,13 +19,11 @@ import datetime
 import discord
 
 def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then to a timedelta
-	pattern = r"(\d+)([mh]?)"
+	pattern = r"(\d+)([mhd]?)"
 	match = re.search(pattern, duration_str)
 	if match:
 		num, unit = match.groups()
-		if unit == 's':
-			factor = 1
-		elif unit == 'm':
+		if unit == 'm':
 			factor = 60
 		elif unit == 'h':
 			factor = 3600

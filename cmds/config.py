@@ -25,7 +25,7 @@ class config(commands.Cog):
 	def __init__(self, bot: Bot) -> None:
 		self.bot = bot
 
-	@app_commands.command()
+	@app_commands.command(description="Set new moderation log channel")
 	@app_commands.describe(channel="Set new logging channel (provide channel id)")
 	@app_commands.checks.has_permissions(manage_guild=True)
 	async def set_log_channel(self,interaction: discord.Interaction, channel: str):
@@ -43,7 +43,7 @@ class config(commands.Cog):
 		except Exception as e:
 			await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 
-	@app_commands.command()
+	@app_commands.command(description="Set new event log channel")
 	@app_commands.describe(channel="Set new event logging channel (provide channel id)")
 	@app_commands.checks.has_permissions(manage_guild=True)
 	async def set_event_log_channel(self,interaction: discord.Interaction, channel: str):

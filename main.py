@@ -154,7 +154,7 @@ async def look_for_unbans(): # check every active tempban for an unban
 					user = await bot.fetch_user(int(user_id))
 					guild = await bot.fetch_guild(int(guild_id))
 					await guild.unban(user, reason="Scheduled unban")
-					db.set_moderation_inactive(uban['moderation_id'])
+					db.set_tempban_inactive(uban['moderation_id'])
 					print(f"Unbanned {user.name} from {guild.name}")
 	except Exception as e:
 		print(f"Error while unbanning: {e}")
@@ -162,8 +162,12 @@ async def look_for_unbans(): # check every active tempban for an unban
 async def send_pending_delete_events():
 	for guild_id, embeds in message_delete_embeds.items():
 		channel_id = db.get_event_log_channel(guild_id)
-		channel = await bot.fetch_channel(channel_id)
-		
+		try:
+			channel = await bot.fetch_channel(channel_id)
+		except Exception as e:
+			channel = None
+			del message_delete_embeds[guild_id]
+			return
 		# send in batches of 10 embeds so that api doesnt get mad
 		for i in range(0, len(embeds), 10):
 			batch = embeds[i:i+10]

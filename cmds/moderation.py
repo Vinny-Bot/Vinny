@@ -24,6 +24,7 @@ import datetime
 from typing import Literal
 from utils import utils
 from utils import embeds
+import Paginator
 
 class moderation(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
@@ -42,7 +43,7 @@ class moderation(commands.Cog):
 		log_channel = await self.bot.fetch_channel(log_channel_id)
 		await log_channel.send(embed=embed)
 
-	@app_commands.command()
+	@app_commands.command(description="Mute a member")
 	@app_commands.describe(victim="Member to sanction")
 	@app_commands.describe(severity="Type of sanction")
 	@app_commands.describe(duration="Time of mute (eg: 1s for 1 second, 1m for 1 minute, 1h for 1 hour, 1d for 1 day.)")
@@ -56,7 +57,7 @@ class moderation(commands.Cog):
 				user_id = victim.id
 				moderator_id = interaction.user.id
 				duration_delta = utils.parse_duration(duration)
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type=reason, severity=severity, duration=duration, time=str(time.time()))
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()))
 				try:
 					channel = await victim.create_dm()
 					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Mute"))
@@ -70,7 +71,7 @@ class moderation(commands.Cog):
 		else:
 			await interaction.response.send_message("Invalid permissions", ephemeral=True)
 
-	@app_commands.command()
+	@app_commands.command(description="Ban a member")
 	@app_commands.describe(victim="Member to sanction")
 	@app_commands.describe(severity="Type of sanction")
 	@app_commands.describe(duration="Time of ban (eg: 1s for 1 second, 1m for 1 minute, 1h for 1 hour, 1d for 1 day.)")
@@ -84,7 +85,7 @@ class moderation(commands.Cog):
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type=reason, severity=severity, duration=duration, time=str(time.time()))
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()))
 				try:
 					channel = await victim.create_dm()
 					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Ban"))
@@ -100,7 +101,7 @@ class moderation(commands.Cog):
 		else:
 			await interaction.response.send_message("Invalid permissions", ephemeral=True)
 
-	@app_commands.command()
+	@app_commands.command(description="Warn a member")
 	@app_commands.describe(victim="Member to sanction")
 	@app_commands.describe(severity="Type of sanction")
 	@app_commands.describe(reason="Reason of warn")
@@ -112,7 +113,7 @@ class moderation(commands.Cog):
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type=reason, severity=severity, duration=None, time=str(time.time()))
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Warn", reason=reason, severity=severity, duration=None, time=str(time.time()))
 				await interaction.response.send_message(f"Moderation `{moderation_id}`: Warned <@{user_id}>: **{severity}. {reason}**")
 				try:
 					channel = await victim.create_dm()
@@ -124,6 +125,50 @@ class moderation(commands.Cog):
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
 			await interaction.response.send_message("Invalid permissions", ephemeral=True)
+
+	@app_commands.command(description="View moderations of a member")
+	@app_commands.describe(inactive="View inactive moderations as well")
+	@app_commands.rename(inactive="view_inactive")
+	async def moderations(self,interaction: discord.Interaction, member: discord.Member, inactive: bool = False):
+		pages = []
+		page = 1
+		moderations = db.get_moderations_by_user_and_guild(interaction.guild.id, member.id, inactive)
+		try:
+			for i in range(0, len(moderations), 6):
+				embed = discord.Embed(title=f"{member.name}'s moderations", description=f"Page {page}")
+				chunk = moderations[i:i+6]
+				page = page + 1
+				for moderation in chunk:
+					if moderation[8] is None:
+						duration = ""
+					else:
+						duration = f" `{moderation[8]}`"
+					if moderation[9] == 0:
+						embed.add_field(name=f"⛔️ {moderation[4]} ({moderation[6]}) - `{moderation[0]}`", value=f"`{moderation[5]}`\n<@{moderation[3]}>\n<t:{int(float(moderation[7]))}>{duration}")
+					else:
+						embed.add_field(name=f"{moderation[4]} ({moderation[6]}) - `{moderation[0]}`", value=f"`{moderation[5]}`\n<@{moderation[3]}>\n<t:{int(float(moderation[7]))}>{duration}")
+				pages.append(embed)
+			await Paginator.Simple().start(interaction, pages=pages)
+		except Exception:
+			await interaction.response.send_message("This member doesn't have any moderations in this server", ephemeral=True)
+
+	@app_commands.command(description="Mark moderation as inactive or active")
+	@app_commands.rename(moderation_id='moderation')
+	@app_commands.describe(moderation_id="Moderation to mark inactive (Provide ID)")
+	async def mark_moderation(self,interaction: discord.Interaction, moderation_id: int, mark: Literal["Inactive", "Active"]):
+		moderation = db.get_moderation_by_id(moderation_id)
+		if moderation is not None and moderation[1] == interaction.guild.id:
+			if mark == "Inactive":
+				active = False
+			else:
+				active = True
+			try:
+				db.set_moderation_inactive_or_active(moderation_id, active)
+				await interaction.response.send_message(f"Marked moderation `{moderation_id}` as {mark}")
+			except Exception as e:
+				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+		else:
+			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
 
 async def setup(bot):
 	await bot.add_cog(moderation(bot))
