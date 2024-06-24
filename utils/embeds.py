@@ -116,3 +116,16 @@ async def quickmod_embed(moderator: discord.Member, offending_message: discord.M
 	embed.set_thumbnail(url=offending_message.author.avatar)
 	embed.set_footer(text="Pick actions below and then afterwards send a message containing moderation reason (type `cancel` to cancel)")
 	return embed
+
+async def member_join(member: discord.Member):
+	embed = discord.Embed(title=f"Member joined", color=65280)
+	embed.add_field(name="User information", value=f"{member.mention}\n{member.name}\n{member.id}")
+	embed.add_field(name="Joined at", value=f"<t:{int(member.joined_at.timestamp())}>")
+	embed.set_thumbnail(url=member.avatar)
+	return embed
+
+async def member_remove(member: discord.Member):
+	embed = discord.Embed(title=f"Member left", color=16729932)
+	embed.add_field(name="User information", value=f"{member.mention}\n{member.name}\n{member.id}")
+	embed.set_thumbnail(url=member.avatar)
+	return embed

@@ -126,6 +126,18 @@ async def on_guild_channel_delete(event_channel):
 	embed = await embeds.channel_deleted(event_channel)
 	await channel.send(embed=embed)
 
+@bot.event
+async def on_member_join(member: discord.Member):
+	channel = await bot.fetch_channel(db.get_event_log_channel(member.guild.id))
+	embed = await embeds.member_join(member)
+	await channel.send(embed=embed)
+
+@bot.event
+async def on_member_remove(member: discord.Member):
+	channel = await bot.fetch_channel(db.get_event_log_channel(member.guild.id))
+	embed = await embeds.member_remove(member)
+	await channel.send(embed=embed)
+
 async def loadcogs():
 	command_path = base_dir / 'cmds'
 	for files in os.listdir(command_path):
