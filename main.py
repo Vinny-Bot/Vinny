@@ -58,7 +58,7 @@ def load_config():
 			config_data = tomllib.load(f)
 			return config_data
 	except tomllib.TOMLDecodeError: # incase config is literally invalid
-		print("Invalid TOML configuration detected, make sure to follow the config guide in URL.HERE.FIXME.YEA")
+		print("Invalid TOML configuration detected, make sure to follow the config guide in the README.md")
 		return None
 
 config_data = load_config()
