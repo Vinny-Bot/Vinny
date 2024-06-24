@@ -126,15 +126,19 @@ async def on_guild_channel_delete(event_channel):
 	embed = await embeds.channel_deleted(event_channel)
 	await channel.send(embed=embed)
 
-async def loadcmds():
+async def loadcogs():
 	command_path = base_dir / 'cmds'
 	for files in os.listdir(command_path):
 		if files.endswith(".py"):
 			await bot.load_extension(f'cmds.{files[:-3]}')
+	extensions_path = base_dir / 'exts'
+	for files in os.listdir(extensions_path):
+		if files.endswith(".py"):
+			await bot.load_extension(f'exts.{files[:-3]}')
 
 async def init():
 	async with bot:
-		await loadcmds()
+		await loadcogs()
 		await bot.start(token)
 
 async def look_for_unbans(): # check every active tempban for an unban
@@ -153,7 +157,10 @@ async def look_for_unbans(): # check every active tempban for an unban
 
 					user = await bot.fetch_user(int(user_id))
 					guild = await bot.fetch_guild(int(guild_id))
-					await guild.unban(user, reason="Scheduled unban")
+					try:
+						await guild.unban(user, reason="Scheduled unban")
+					except Exception:
+						pass
 					db.set_tempban_inactive(uban['moderation_id'])
 					print(f"Unbanned {user.name} from {guild.name}")
 	except Exception as e:

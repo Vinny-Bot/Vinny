@@ -63,8 +63,8 @@ class moderation(commands.Cog):
 					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Mute"))
 				except Exception:
 					pass
-				await victim.timeout(duration_delta, reason=f"{reason} - {interaction.user.name}", )
-				await interaction.response.send_message(f"Moderation `{moderation_id}`: Muted <@{user_id}> for {duration}: **{severity}. {reason}**")
+				await victim.timeout(duration_delta, reason=f"{reason} - {interaction.user.name}")
+				await interaction.response.send_message(f"Moderation `{moderation_id}`: Muted <@{user_id}> for **`{duration}`**: **{severity}. {reason}**")
 				await moderation.log_embed(self,victim=victim, severity=severity, duration=duration, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Mute", guild=interaction.guild)
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)

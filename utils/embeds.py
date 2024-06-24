@@ -109,3 +109,10 @@ async def channel_deleted(channel):
 	embed = discord.Embed(title="Channel removed", color=16729932)
 	embed.add_field(name="Channel", value=f"`#{channel.name}`\n{channel.id}")
 	return embed
+
+async def quickmod_embed(moderator: discord.Member, offending_message: discord.Message):
+	embed = discord.Embed(title=f"Quickmod - {offending_message.author.name}", color=16753920)
+	embed.add_field(name="Offending message", value=f"{offending_message.jump_url}\n{offending_message.id}\n```\n{offending_message.content}\n```")
+	embed.set_thumbnail(url=offending_message.author.avatar)
+	embed.set_footer(text="Pick actions below and then afterwards send a message containing moderation reason (type `cancel` to cancel)")
+	return embed
