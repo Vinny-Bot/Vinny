@@ -129,7 +129,7 @@ class moderation(commands.Cog):
 	@app_commands.command(description="View moderations of a member")
 	@app_commands.describe(inactive="View inactive moderations as well")
 	@app_commands.rename(inactive="view_inactive")
-	async def moderations(self,interaction: discord.Interaction, member: discord.Member, inactive: bool = False):
+	async def moderations(self,interaction: discord.Interaction, member: discord.User, inactive: bool = False):
 		pages = []
 		page = 1
 		moderations = db.get_moderations_by_user_and_guild(interaction.guild.id, member.id, inactive)
