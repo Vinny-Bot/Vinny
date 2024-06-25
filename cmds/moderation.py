@@ -31,7 +31,7 @@ class moderation(commands.Cog):
 		self.bot = bot
 
 	async def log_embed(self,victim: discord.Member, severity: str, duration: str, reason: str, moderator: discord.Member, moderation_id: str, moderation_type: str, guild: discord.Guild):
-		embed = discord.Embed(title=f"Moderation `{moderation_id}` - {moderation_type}", color=16711680)
+		embed = discord.Embed(title=f"Moderation `{moderation_id}` - {moderation_type}", color=16711680, timestamp=datetime.datetime.now())
 		embed.add_field(name="Moderated member", value=f"<@{victim.id}>")
 		embed.add_field(name="Moderator", value=f"<@{moderator.id}>")
 		embed.add_field(name="Severity", value=f"{severity}")

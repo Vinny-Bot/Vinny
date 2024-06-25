@@ -22,7 +22,7 @@ import discord
 from utils import utils
 
 async def delete_message_embed(payload: discord.RawMessageDeleteEvent, message: discord.Message = None):
-	embed = discord.Embed(title="Message deleted", color=16729932)
+	embed = discord.Embed(title="Message deleted", color=16729932, timestamp=datetime.datetime.now())
 	if payload and not message:
 		embed.add_field(name="Author", value=f"*Cannot be retrieved*")
 		embed.add_field(name="Channel", value=f"<#{payload.channel_id}>\n{payload.channel_id}")
@@ -36,7 +36,7 @@ async def delete_message_embed(payload: discord.RawMessageDeleteEvent, message: 
 	return embed
 
 async def edit_message_embed(before: discord.Message = None, after: discord.Message = None, payload: discord.RawMessageUpdateEvent = None):
-	embed = discord.Embed(title="Message edited", color=16761035)
+	embed = discord.Embed(title="Message edited", color=16761035, timestamp=datetime.datetime.now())
 	embed.add_field(name="Author", value=f"<@{before.author.id}>\n{before.author.id}")
 	embed.add_field(name="Channel", value=f"<#{before.channel.id}>\n{before.channel.id}")
 	embed.add_field(name="Message", value=f"{before.jump_url}\n{before.id}")
@@ -45,7 +45,7 @@ async def edit_message_embed(before: discord.Message = None, after: discord.Mess
 	return embed
 
 async def raw_edit_message_embed(payload: discord.RawMessageUpdateEvent, message: discord.Message):
-	embed = discord.Embed(title="Message edited", color=16761035)
+	embed = discord.Embed(title="Message edited", color=16761035, timestamp=datetime.datetime.now())
 	embed.add_field(name="Author", value=f"<@{message.author.id}>\n{message.author.id}")
 	embed.add_field(name="Channel", value=f"<#{message.channel.id}>\n{message.channel.id}")
 	embed.add_field(name="Message", value=f"{message.jump_url}\n{message.id}")
@@ -61,7 +61,7 @@ async def dm_moderation_embed(guild: discord.Guild, victim: discord.User | disco
 			verb="muted in"
 		elif moderation_type == "Warn":
 			verb="warned in"
-		embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16761035)
+		embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16761035, timestamp=datetime.datetime.now())
 		embed.add_field(name="Reason", value=f"```\n{reason}\n```")
 		embed.add_field(name="Severity", value=f"{severity}", inline=False)
 		if severity == "S2" or severity == "S3":
@@ -79,21 +79,21 @@ async def member_update_embed(before: discord.Member, after: discord.Member):
 	try:
 		if len(after.roles) > len(before.roles):
 			role = next(role for role in after.roles if role not in before.roles)
-			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280)
+			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280, timestamp=datetime.datetime.now())
 			embed.set_thumbnail(url=after.display_avatar)
 			embed.add_field(name="Added role", value=role.mention)
 		elif len(after.roles) < len(before.roles):
 			role = next(role for role in before.roles if role not in after.roles)
-			embed = discord.Embed(title=f"Member Updated - {after.name}", color=16753920)
+			embed = discord.Embed(title=f"Member Updated - {after.name}", color=16753920, timestamp=datetime.datetime.now())
 			embed.set_thumbnail(url=after.display_avatar)
 			embed.add_field(name="Removed role", value=role.mention)
 		elif before.nick != after.nick:
-			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280)
+			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280, timestamp=datetime.datetime.now())
 			embed.set_thumbnail(url=after.display_avatar)
 			embed.add_field(name="Old nickname", value=before.nick)
 			embed.add_field(name="New nickname", value=after.nick)
 		elif before.display_avatar != after.display_avatar:
-			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280)
+			embed = discord.Embed(title=f"Member Updated - {after.name}", color=65280, timestamp=datetime.datetime.now())
 			embed.set_thumbnail(url=after.display_avatar)
 			embed.add_field(name="", value="New display avatar")
 		return embed
@@ -101,12 +101,12 @@ async def member_update_embed(before: discord.Member, after: discord.Member):
 		print(e)
 
 async def channel_created(channel):
-	embed = discord.Embed(title="Channel created", color=8647311)
+	embed = discord.Embed(title="Channel created", color=8647311, timestamp=datetime.datetime.now())
 	embed.add_field(name="Channel", value=f"{channel.mention}\n{channel.id}")
 	return embed
 
 async def channel_deleted(channel):
-	embed = discord.Embed(title="Channel removed", color=16729932)
+	embed = discord.Embed(title="Channel removed", color=16729932, timestamp=datetime.datetime.now())
 	embed.add_field(name="Channel", value=f"`#{channel.name}`\n{channel.id}")
 	return embed
 
@@ -118,14 +118,14 @@ async def quickmod_embed(moderator: discord.Member, offending_message: discord.M
 	return embed
 
 async def member_join(member: discord.Member):
-	embed = discord.Embed(title=f"Member joined", color=65280)
+	embed = discord.Embed(title=f"Member joined", color=65280, timestamp=datetime.datetime.now())
 	embed.add_field(name="User information", value=f"{member.mention}\n{member.name}\n{member.id}")
 	embed.add_field(name="Joined at", value=f"<t:{int(member.joined_at.timestamp())}>")
 	embed.set_thumbnail(url=member.avatar)
 	return embed
 
 async def member_remove(member: discord.Member):
-	embed = discord.Embed(title=f"Member left", color=16729932)
+	embed = discord.Embed(title=f"Member left", color=16729932, timestamp=datetime.datetime.now())
 	embed.add_field(name="User information", value=f"{member.mention}\n{member.name}\n{member.id}")
 	embed.set_thumbnail(url=member.avatar)
 	return embed
