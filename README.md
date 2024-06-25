@@ -1,5 +1,6 @@
 # Viggy
 Self-hosted moderation bot
+
 <img src="https://i.imgur.com/mCpZPcv.png" alt="viggy mascot, made by @catneptune on github" width=200, height=200>
 ### Features
 - Moderation tracking
