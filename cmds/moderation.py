@@ -170,5 +170,31 @@ class moderation(commands.Cog):
 		else:
 			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
 
+	@app_commands.command(description="View info about a moderation")
+	@app_commands.rename(moderation_id='moderation')
+	@app_commands.describe(moderation_id="Moderation to view")
+	async def moderation(self,interaction: discord.Interaction, moderation_id: int):
+		moderation = db.get_moderation_by_id(moderation_id)
+		if moderation is not None and moderation[1] == interaction.guild.id:
+			if moderation[9] == 0:
+				active = "No"
+			else:
+				active = "Yes"
+			try:
+				embed = discord.Embed(title=f"Moderation `{moderation_id}`", timestamp=datetime.datetime.now())
+				embed.add_field(name="Victim", value=f"<@{moderation[2]}>\n{moderation[2]}")
+				embed.add_field(name="Moderator", value=f"<@{moderation[3]}>\n{moderation[3]}")
+				embed.add_field(name="Type", value=f"{moderation[4]}")
+				embed.add_field(name="Sanction", value=f"{moderation[6]}")
+				embed.add_field(name="Reason", value=f"{moderation[5]}")
+				embed.add_field(name="Duration", value=f"{moderation[8]}")
+				embed.add_field(name="Time", value=f"<t:{int(moderation[9])}>")
+				embed.add_field(name="Active", value=f"{active}")
+				await interaction.response.send_message(embed=embed)
+			except Exception as e:
+				print(e)
+			print(moderation)
+		else:
+			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
 async def setup(bot):
 	await bot.add_cog(moderation(bot))
