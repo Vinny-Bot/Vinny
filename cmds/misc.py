@@ -1,4 +1,4 @@
-# pakmar - discord moderation bot
+# viggy - discord moderation bot
 # Copyright (C) 2024 0vf
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,12 +30,32 @@ class misc(commands.Cog):
 			embed.add_field(name="Operating System", value=f"{platform.system()} {platform.release()}")
 			embed.add_field(name="", value="")
 			embed.add_field(name="Python Version", value=f"{platform.python_version()}")
-			embed.add_field(name="Pakmar Version", value=f"{info.get_pakmar_version()}")
+			embed.add_field(name="Viggy Version", value=f"{info.get_viggy_version()}")
 			embed.add_field(name="", value="")
 			embed.add_field(name="Total moderations", value=f"{db.get_count_of_moderations()}")
 			await interaction.response.send_message(embed=embed)
 		except Exception as e:
 			await interaction.response.send_message("Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+
+	@app_commands.command(description="Say anything in your current channel")
+	@app_commands.describe(message="Message to send")
+	@app_commands.describe(channel="Channel to send message in")
+	@app_commands.describe(reply_to="Message to reply to (give ID)")
+	@app_commands.checks.has_permissions(moderate_members=True)
+	async def say(self,interaction: discord.Interaction, message: str, channel: discord.TextChannel = None, reply_to: str = None):
+		if channel is not None:
+			pass
+		else:
+			channel = interaction.channel
+		
+		if reply_to is None:
+			await interaction.response.send_message(f"Sent message in {channel.mention}", ephemeral=True)
+			await channel.send(message)
+		else:
+			message_obj = await channel.fetch_message(int(reply_to))
+			channel = message_obj.channel
+			await interaction.response.send_message(f"Sent reply message in {channel.mention} to {message_obj.jump_url}", ephemeral=True)
+			await message_obj.reply(message)
 
 async def setup(client):
 	await client.add_cog(misc(client))

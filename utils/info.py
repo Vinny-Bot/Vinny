@@ -1,4 +1,4 @@
-# pakmar - discord moderation bot
+# viggy - discord moderation bot
 # Copyright (C) 2024 0vf
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pakmar_version = "0.0.1"
+viggy_version = "0.1.0"
 
-def get_pakmar_version():
-	return pakmar_version
+def get_viggy_version():
+	return viggy_version

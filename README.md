@@ -1,4 +1,4 @@
-# Pakmar
+# Viggy
 Self-hosted moderation bot
 
 ### Features
@@ -11,8 +11,8 @@ Self-hosted moderation bot
 ### Setup
 Begin by cloning the repository
 ```
-git clone https://github.com/0vf/pakmar
-cd pakmar
+git clone https://github.com/0vf/viggy
+cd viggy
 ```
 Install required dependencies
 ```
