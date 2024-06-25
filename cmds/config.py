@@ -28,14 +28,13 @@ class config(commands.Cog):
 	@app_commands.command(description="Set new moderation log channel")
 	@app_commands.describe(channel="Set new logging channel (provide channel id)")
 	@app_commands.checks.has_permissions(manage_guild=True)
-	async def set_log_channel(self,interaction: discord.Interaction, channel: str):
+	async def set_log_channel(self,interaction: discord.Interaction, channel: discord.TextChannel):
 		try:
 			try:
-				channel_obj = await self.bot.fetch_channel(channel)
-				if channel_obj.guild.id == interaction.guild.id:
+				if channel.guild.id == interaction.guild.id:
 					try:
-						db.set_log_channel(interaction.guild.id, channel)
-						await interaction.response.send_message(f"Set log channel to <#{channel_obj.id}>")
+						db.set_log_channel(interaction.guild.id, channel.id)
+						await interaction.response.send_message(f"Set log channel to <#{channel.id}>")
 					except Exception as e:
 						await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 			except Exception:
@@ -46,14 +45,13 @@ class config(commands.Cog):
 	@app_commands.command(description="Set new event log channel")
 	@app_commands.describe(channel="Set new event logging channel (provide channel id)")
 	@app_commands.checks.has_permissions(manage_guild=True)
-	async def set_event_log_channel(self,interaction: discord.Interaction, channel: str):
+	async def set_event_log_channel(self,interaction: discord.Interaction, channel: discord.TextChannel):
 		try:
 			try:
-				channel_obj = await self.bot.fetch_channel(channel)
-				if channel_obj.guild.id == interaction.guild.id:
+				if channel.guild.id == interaction.guild.id:
 					try:
-						db.set_event_log_channel(interaction.guild.id, channel)
-						await interaction.response.send_message(f"Set event log channel to <#{channel_obj.id}>")
+						db.set_event_log_channel(interaction.guild.id, channel.id)
+						await interaction.response.send_message(f"Set event log channel to <#{channel.id}>")
 					except Exception as e:
 						await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 			except Exception:
