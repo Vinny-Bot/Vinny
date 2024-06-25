@@ -1,0 +1,79 @@
+# pakmar - discord moderation self.bot
+# Copyright (C) 2024 0vf
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import datetime
+import discord
+from discord import app_commands
+from discord.ext import commands
+from discord.ext.commands import Bot
+from typing import Literal
+import discord.ext
+import discord.ext.commands
+import discord.ext.commands.view
+import schedule
+import asyncio
+from utils import db, utils, embeds
+
+class unbans(commands.Cog):
+	def __init__(self, bot: commands.Bot) -> None:
+		self.bot = bot
+
+	async def scheduler(self):
+		while True:
+			await asyncio.sleep(1)
+			schedule.run_pending()
+
+	async def start_schedule(self):
+		schedule.every().minute.do(lambda: asyncio.create_task(unbans.look_for_unbans(self)))
+
+	@commands.Cog.listener()
+	async def on_ready(self):
+		print("starting unban scheduler")
+		await unbans.start_schedule(self)
+		await unbans.scheduler(self)
+
+	async def look_for_unbans(self): # check every active tempban for an unban
+		unbans = db.get_active_tempbans()
+		now = datetime.datetime.now()
+
+		try:
+			for uban in unbans:
+				if uban['unban_time'] <= now:
+					# if we have a moderation that's past (or equal) to its unban time we will start the unban process
+					moderation = db.get_moderation_by_id(uban['moderation_id'])
+
+					if moderation:
+						guild_id = moderation[1]
+						user_id = moderation[2]
+
+						user = await self.bot.fetch_user(int(user_id))
+						guild = await self.bot.fetch_guild(int(guild_id))
+						try:
+							await guild.unban(user, reason="Scheduled unban")
+						except Exception:
+							pass
+						db.set_tempban_inactive(uban['moderation_id'])
+						print(f"Unbanned {user.name} from {guild.name}")
+		except Exception as e:
+			print(f"Error while unbanning: {e}")
+
+	async def scheduler():
+		while True:
+			await asyncio.sleep(1)
+			schedule.run_pending()
+
+async def setup(bot):
+	await bot.add_cog(unbans(bot))
