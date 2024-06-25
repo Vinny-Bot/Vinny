@@ -193,7 +193,6 @@ class moderation(commands.Cog):
 				await interaction.response.send_message(embed=embed)
 			except Exception as e:
 				print(e)
-			print(moderation)
 		else:
 			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
 async def setup(bot):
