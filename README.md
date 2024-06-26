@@ -1,7 +1,7 @@
-# Viggy
+# Vinny
 Self-hosted moderation bot
 
-<img src="https://i.imgur.com/mCpZPcv.png" alt="viggy mascot, made by @catneptune on github" width=200, height=200>
+<img src="https://i.imgur.com/mCpZPcv.png" alt="vinny mascot, made by @catneptune on github" width=200, height=200>
 
 ### Features
 - Moderation tracking
@@ -13,8 +13,8 @@ Self-hosted moderation bot
 ### Setup
 Begin by cloning the repository
 ```
-git clone https://github.com/0vf/viggy
-cd viggy
+git clone https://github.com/0vf/vinny
+cd vinny
 ```
 Install required dependencies
 ```

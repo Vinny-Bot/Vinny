@@ -1,4 +1,4 @@
-# viggy - discord moderation bot
+# vinny - discord moderation bot
 # Copyright (C) 2024 0vf
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,7 @@ class misc(commands.Cog):
 			embed.add_field(name="Operating System", value=f"{platform.system()} {platform.release()}")
 			embed.add_field(name="", value="")
 			embed.add_field(name="Python Version", value=f"{platform.python_version()}")
-			embed.add_field(name="Viggy Version", value=f"{info.get_viggy_version()}")
+			embed.add_field(name="Vinny Version", value=f"{info.get_vinny_version()}")
 			embed.add_field(name="", value="")
 			embed.add_field(name="Total moderations", value=f"{db.get_count_of_moderations()}")
 			await interaction.response.send_message(embed=embed)

@@ -1,4 +1,4 @@
-# viggy - discord moderation bot
+# vinny - discord moderation bot
 # Copyright (C) 2024 0vf
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-viggy_version = "0.1.0"
+vinny_version = "0.1.0"
 
-def get_viggy_version():
-	return viggy_version
+def get_vinny_version():
+	return vinny_version
