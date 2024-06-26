@@ -39,7 +39,9 @@ class moderation(commands.Cog):
 		if severity == "S2" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
 		embed.set_thumbnail(url=victim.avatar)
-		log_channel_id = db.get_log_channel(guild.id)
+		conn, c = db.db_connect()
+		log_channel_id = db.get_log_channel(guild.id, c)
+		conn.close()
 		log_channel = await self.bot.fetch_channel(log_channel_id)
 		await log_channel.send(embed=embed)
 
@@ -57,7 +59,9 @@ class moderation(commands.Cog):
 				user_id = victim.id
 				moderator_id = interaction.user.id
 				duration_delta = utils.parse_duration(duration)
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()))
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
+				conn.close()
 				try:
 					channel = await victim.create_dm()
 					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Mute"))
@@ -85,7 +89,9 @@ class moderation(commands.Cog):
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()))
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
+				conn.close()
 				try:
 					channel = await victim.create_dm()
 					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Ban"))
@@ -113,7 +119,9 @@ class moderation(commands.Cog):
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Warn", reason=reason, severity=severity, duration=None, time=str(time.time()))
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Warn", reason=reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
+				conn.close()
 				await interaction.response.send_message(f"Moderation `{moderation_id}`: Warned <@{user_id}>: **{severity}. {reason}**")
 				try:
 					channel = await victim.create_dm()
@@ -132,7 +140,9 @@ class moderation(commands.Cog):
 	async def moderations(self,interaction: discord.Interaction, member: discord.User, inactive: bool = False):
 		pages = []
 		page = 1
-		moderations = db.get_moderations_by_user_and_guild(interaction.guild.id, member.id, inactive)
+		conn, c = db.db_connect()
+		moderations = db.get_moderations_by_user_and_guild(interaction.guild.id, member.id, inactive, c)
+		conn.close()
 		try:
 			for i in range(0, len(moderations), 6):
 				embed = discord.Embed(title=f"{member.name}'s moderations", description=f"Page {page}")
@@ -156,7 +166,8 @@ class moderation(commands.Cog):
 	@app_commands.rename(moderation_id='moderation')
 	@app_commands.describe(moderation_id="Moderation to mark inactive (Provide ID)")
 	async def mark_moderation(self,interaction: discord.Interaction, moderation_id: int, mark: Literal["Inactive", "Active"]):
-		moderation = db.get_moderation_by_id(moderation_id)
+		conn, c = db.db_connect()
+		moderation = db.get_moderation_by_id(moderation_id, c)
 		if moderation is not None and moderation[1] == interaction.guild.id:
 			if mark == "Inactive":
 				active = False
@@ -169,12 +180,15 @@ class moderation(commands.Cog):
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
 			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
+		conn.close()
 
 	@app_commands.command(description="View info about a moderation")
 	@app_commands.rename(moderation_id='moderation')
 	@app_commands.describe(moderation_id="Moderation to view")
 	async def moderation(self,interaction: discord.Interaction, moderation_id: int):
-		moderation = db.get_moderation_by_id(moderation_id)
+		conn, c = db.db_connect()
+		moderation = db.get_moderation_by_id(moderation_id, c)
+		conn.close()
 		if moderation is not None and moderation[1] == interaction.guild.id:
 			if moderation[9] == 0:
 				active = "No"
@@ -195,5 +209,6 @@ class moderation(commands.Cog):
 				print(e)
 		else:
 			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
+
 async def setup(bot):
 	await bot.add_cog(moderation(bot))

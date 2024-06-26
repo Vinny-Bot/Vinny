@@ -96,10 +96,11 @@ class quickmod(commands.Cog):
 					await message.reply("Cancelled", mention_author=False)
 					return
 				else:
+					conn, c = db.db_connect()
 					quick_mod_action = quick_mod[message.author.id][message.guild.id]
 					if quick_mod_action["sanction"] == "S1":
 						moderation_type = "Warn"
-						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=None)
+						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=None, conn=conn, c=c)
 						try:
 							channel = await quick_mod_action["message"].author.create_dm()
 							await channel.send(embed=await embeds.dm_moderation_embed(guild=message.guild, victim=quick_mod_action["message"].author, reason=message.content, duration=None, severity=quick_mod_action['sanction'], moderation_type=moderation_type))
@@ -111,9 +112,10 @@ class quickmod(commands.Cog):
 							pass
 						await message.reply(f"Moderation `{moderation_id}`: Warned <@{quick_mod_action["message"].author.id}>: **{quick_mod_action["sanction"]}. {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
+						conn.close()
 					elif quick_mod_action["sanction"] == "S2":
 						moderation_type = "Mute"
-						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=quick_mod_action["duration"])
+						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=quick_mod_action["duration"], conn=conn, c=c)
 						duration_delta = utils.parse_duration(quick_mod_action["duration"])
 						try:
 							channel = await quick_mod_action["message"].author.create_dm()
@@ -127,6 +129,7 @@ class quickmod(commands.Cog):
 							pass
 						await message.reply(f"Moderation `{moderation_id}`: Muted <@{quick_mod_action["message"].author.id}> for **`{quick_mod_action["duration"]}`**: **{quick_mod_action["sanction"]}. {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
+						conn.close()
 					elif quick_mod_action["sanction"] == "S3" or quick_mod_action["sanction"] == "S4":
 						moderation_type = "Ban"
 						duration = quick_mod_action["duration"]
@@ -134,7 +137,7 @@ class quickmod(commands.Cog):
 						if quick_mod_action["sanction"] == "S4":
 							duration = None
 							display_duration = "inf"
-						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=duration)
+						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=duration, conn=conn, c=c)
 						try:
 							channel = await quick_mod_action["message"].author.create_dm()
 							await channel.send(embed=await embeds.dm_moderation_embed(guild=message.guild, victim=quick_mod_action["message"].author, reason=message.content, duration=quick_mod_action['duration'], severity=quick_mod_action['sanction'], moderation_type=moderation_type))
@@ -147,6 +150,7 @@ class quickmod(commands.Cog):
 							pass
 						await message.reply(f"Moderation `{moderation_id}`: Banned <@{quick_mod_action["message"].author.id}> for **`{display_duration}`**: **{quick_mod_action["sanction"]}. {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
+						conn.close()
 			except Exception as e:
 				print(f"Quickmod error: {traceback.format_exc()}")
 				

@@ -46,14 +46,16 @@ class unbans(commands.Cog):
 		await unbans.scheduler(self)
 
 	async def look_for_unbans(self): # check every active tempban for an unban
-		unbans = db.get_active_tempbans()
+		conn, c = db.db_connect()
+		unbans = db.get_active_tempbans(c)
 		now = datetime.datetime.now()
 
 		try:
 			for uban in unbans:
 				if uban['unban_time'] <= now:
+					conn, c = db.db_connect()
 					# if we have a moderation that's past (or equal) to its unban time we will start the unban process
-					moderation = db.get_moderation_by_id(uban['moderation_id'])
+					moderation = db.get_moderation_by_id(uban['moderation_id'], c)
 
 					if moderation:
 						guild_id = moderation[1]
@@ -65,11 +67,12 @@ class unbans(commands.Cog):
 							await guild.unban(user, reason="Scheduled unban")
 						except Exception:
 							pass
-						db.set_tempban_inactive(uban['moderation_id'])
+						db.set_tempban_inactive(uban['moderation_id'], conn, c)
 						print(f"Unbanned {user.name} from {guild.name}")
+					conn.close()
 		except Exception as e:
 			print(f"Error while unbanning: {e}")
-
+		conn.close()
 	async def scheduler():
 		while True:
 			await asyncio.sleep(1)

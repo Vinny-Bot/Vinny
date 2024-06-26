@@ -37,7 +37,9 @@ class events(commands.Cog):
 
 	async def send_pending_delete_events(self):
 		for guild_id, embeds in message_delete_embeds.items():
-			channel_id = db.get_event_log_channel(guild_id)
+			conn, c = db.db_connect()
+			channel_id = db.get_event_log_channel(guild_id, c)
+			conn.close()
 			try:
 				channel = await self.bot.fetch_channel(channel_id)
 			except Exception as e:
@@ -78,7 +80,9 @@ class events(commands.Cog):
 	async def on_message_edit(self,before: discord.Message, after: discord.Message):
 		if before.content == after.content:
 			return
-		channel_id = db.get_event_log_channel(before.guild.id)
+		conn, c = db.db_connect()
+		channel_id = db.get_event_log_channel(before.guild.id, c)
+		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.edit_message_embed(before, after)
 		await channel.send(embed=embed)
@@ -86,7 +90,9 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_raw_message_edit(self,payload: discord.RawMessageUpdateEvent):
 		if payload.cached_message is None:
-			channel_id = db.get_event_log_channel(payload.guild_id)
+			conn, c = db.db_connect()
+			channel_id = db.get_event_log_channel(payload.guild_id, c)
+			conn.close()
 			channel = await self.bot.fetch_channel(channel_id)
 			event_channel = await self.bot.fetch_channel(payload.channel_id)
 			message = await event_channel.fetch_message(payload.message_id)
@@ -95,34 +101,44 @@ class events(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_member_update(self,before: discord.Member, after: discord.Member):
-		channel_id = db.get_event_log_channel(before.guild.id)
+		conn, c = db.db_connect()
+		channel_id = db.get_event_log_channel(before.guild.id, c)
+		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.member_update_embed(before, after)
 		await channel.send(embed=embed)
 
 	@commands.Cog.listener()
 	async def on_guild_channel_create(self,event_channel):
-		channel_id = db.get_event_log_channel(event_channel.guild.id)
+		conn, c = db.db_connect()
+		channel_id = db.get_event_log_channel(event_channel.guild.id, c)
+		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.channel_created(event_channel)
 		await channel.send(embed=embed)
 
 	@commands.Cog.listener()
 	async def on_guild_channel_delete(self,event_channel):
-		channel_id = db.get_event_log_channel(event_channel.guild.id)
+		conn, c = db.db_connect()
+		channel_id = db.get_event_log_channel(event_channel.guild.id, c)
+		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.channel_deleted(event_channel)
 		await channel.send(embed=embed)
 
 	@commands.Cog.listener()
 	async def on_member_join(self,member: discord.Member):
-		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id))
+		conn, c = db.db_connect()
+		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id, c))
+		conn.close()
 		embed = await embeds.member_join(member)
 		await channel.send(embed=embed)
 
 	@commands.Cog.listener()
 	async def on_member_remove(self,member: discord.Member):
-		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id))
+		conn, c = db.db_connect()
+		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id, c))
+		conn.close()
 		embed = await embeds.member_remove(member)
 		await channel.send(embed=embed)
 

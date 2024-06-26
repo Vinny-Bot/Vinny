@@ -21,9 +21,14 @@ from utils import utils
 
 database = Path(__file__).resolve().parent.parent.joinpath('moderation.db')
 
-def create_moderation_table():
+def db_connect():
 	conn = sqlite3.connect(database)
 	c = conn.cursor()
+
+	return conn, c
+
+def create_moderation_table():
+	conn, c = db_connect()
 
 	c.execute('''CREATE TABLE IF NOT EXISTS moderations (
 						moderation_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,8 +48,7 @@ def create_moderation_table():
 	conn.close()
 
 def create_guilds_table():
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+	conn, c = db_connect()
 
 	c.execute('''CREATE TABLE IF NOT EXISTS guilds (
 					guild_id INTEGER PRIMARY KEY,
@@ -58,11 +62,8 @@ def create_guilds_table():
 create_guilds_table()
 create_moderation_table()
 
-def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation_type: str, reason: str, severity: str, time: str, duration: str):
+def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation_type: str, reason: str, severity: str, time: str, duration: str, conn: sqlite3.Connection, c: sqlite3.Cursor):
 	try:
-		conn = sqlite3.connect(database)
-		c = conn.cursor()
-		
 		# we increment the case/moderation id
 		c.execute("SELECT MAX(moderation_id) AS max_id FROM moderations")
 		result = c.fetchone()
@@ -71,22 +72,16 @@ def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation
 		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, active, tempban_active)
 					VALUES (?,?,?,?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, True, True))
 		conn.commit()
-		conn.close()
 		return case_id
 	except Exception as e:
 		print(f"Error while inserting moderation: {e}")
 
-def get_count_of_moderations():
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def get_count_of_moderations(c: sqlite3.Cursor):
 	c.execute("SELECT COUNT(*) FROM moderations")
 	count = c.fetchone()[0]
-	conn.close()
 	return count
 
-def get_active_tempbans(): # this gave me a headache, TLDR: checks for "active" tempbans
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def get_active_tempbans(c: sqlite3.Cursor): # this gave me a headache, TLDR: checks for "active" tempbans
 	c.execute("SELECT moderation_id, time, duration FROM moderations WHERE severity='S3' AND tempban_active=true")
 	results = []
 	for row in c.fetchall():
@@ -100,74 +95,49 @@ def get_active_tempbans(): # this gave me a headache, TLDR: checks for "active" 
 			'moderation_id': moderation_id,
 			'unban_time': updated_time
 		})
-	conn.close()
 	return results # have fun with these, main.py! i know you'll make good use of these results
 
-def get_moderation_by_id(moderation_id):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def get_moderation_by_id(moderation_id, c: sqlite3.Cursor):
 	c.execute('SELECT * FROM moderations WHERE moderation_id=?', (moderation_id,))
 	moderation = c.fetchone()
-	conn.close()
 	return moderation
 
-def set_moderation_inactive_or_active(moderation_id, active: bool):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def set_moderation_inactive_or_active(moderation_id, active: bool, conn: sqlite3.Connection, c: sqlite3.Cursor):
 	c.execute('UPDATE moderations SET active=0 WHERE moderation_id=?', (moderation_id,))
 	conn.commit()
-	conn.close()
 
-def set_tempban_inactive(moderation_id):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def set_tempban_inactive(moderation_id, conn: sqlite3.Connection, c: sqlite3.Cursor):
 	c.execute('UPDATE moderations SET tempban_active=0 WHERE moderation_id=?', (moderation_id,))
 	conn.commit()
-	conn.close()
 
-def set_log_channel(guild_id: int, channel_id: int):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
-	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, channel_id, get_event_log_channel(guild_id)))
+def set_log_channel(guild_id: int, channel_id: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, channel_id, get_event_log_channel(guild_id, c)))
 	conn.commit()
-	conn.close()
 
-def set_event_log_channel(guild_id: int, channel_id: int):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
-	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, get_log_channel(guild_id), channel_id))
+def set_event_log_channel(guild_id: int, channel_id: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, get_log_channel(guild_id, c), channel_id))
 	conn.commit()
-	conn.close()
 
-def get_log_channel(guild_id: int) -> int:
+def get_log_channel(guild_id: int, c: sqlite3.Cursor) -> int:
 	try:
-		conn = sqlite3.connect(database)
-		c = conn.cursor()
 		c.execute('SELECT log_channel_id FROM guilds WHERE guild_id=?', (guild_id,))
 		log_channel = c.fetchone()[0]
-		conn.close()
 		return log_channel
 	except Exception:
 		return 0
 
-def get_event_log_channel(guild_id: int) -> int:
+def get_event_log_channel(guild_id: int, c: sqlite3.Cursor) -> int:
 	try:
-		conn = sqlite3.connect(database)
-		c = conn.cursor()
 		c.execute('SELECT event_log_channel_id FROM guilds WHERE guild_id=?', (guild_id,))
 		log_channel = c.fetchone()[0]
-		conn.close()
 		return log_channel
 	except Exception:
 		return 0
 
-def get_moderations_by_user_and_guild(guild_id: int, user_id: int, inactive: bool):
-	conn = sqlite3.connect(database)
-	c = conn.cursor()
+def get_moderations_by_user_and_guild(guild_id: int, user_id: int, inactive: bool, c: sqlite3.Cursor):
 	if not inactive:
 		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=? AND active=1", (guild_id, user_id,))
 	else:
 		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=?", (guild_id, user_id,))
 	moderations = c.fetchall()
-	conn.close()
 	return moderations

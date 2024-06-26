@@ -33,7 +33,9 @@ class config(commands.Cog):
 			try:
 				if channel.guild.id == interaction.guild.id:
 					try:
-						db.set_log_channel(interaction.guild.id, channel.id)
+						conn, c = db.db_connect()
+						db.set_log_channel(interaction.guild.id, channel.id, conn, c)
+						conn.close()
 						await interaction.response.send_message(f"Set log channel to <#{channel.id}>")
 					except Exception as e:
 						await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
@@ -50,7 +52,9 @@ class config(commands.Cog):
 			try:
 				if channel.guild.id == interaction.guild.id:
 					try:
-						db.set_event_log_channel(interaction.guild.id, channel.id)
+						conn, c = db.db_connect()
+						db.set_event_log_channel(interaction.guild.id, channel.id, conn, c)
+						conn.close()
 						await interaction.response.send_message(f"Set event log channel to <#{channel.id}>")
 					except Exception as e:
 						await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
