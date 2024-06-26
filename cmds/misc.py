@@ -32,10 +32,12 @@ class misc(commands.Cog):
 			embed.add_field(name="Python Version", value=f"{platform.python_version()}")
 			embed.add_field(name="Vinny Version", value=f"{info.get_vinny_version()}")
 			embed.add_field(name="", value="")
-			embed.add_field(name="Total moderations", value=f"{db.get_count_of_moderations()}")
+			conn, c = db.db_connect()
+			embed.add_field(name="Total moderations", value=f"{db.get_count_of_moderations(c)}")
+			conn.close()
 			await interaction.response.send_message(embed=embed)
 		except Exception as e:
-			await interaction.response.send_message("Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+			await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 
 	@app_commands.command(description="Say anything in your current channel")
 	@app_commands.describe(message="Message to send")
