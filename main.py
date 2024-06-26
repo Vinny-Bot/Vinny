@@ -17,16 +17,8 @@
 import discord
 import os
 import asyncio
-from discord import app_commands
-from discord import Guild, User
 from discord.ext import commands
 from pathlib import Path
-import sys
-import datetime
-import time
-import schedule
-from utils import db
-from utils import embeds
 from utils import utils
 
 base_dir = Path(__file__).resolve().parent
