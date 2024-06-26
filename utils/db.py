@@ -19,7 +19,10 @@ from pathlib import Path
 from datetime import datetime
 from utils import utils
 
-database = Path(__file__).resolve().parent.parent.joinpath('moderation.db')
+config_data = utils.load_config()
+db_file = config_data['database']['file']
+
+database = Path(__file__).resolve().parent.parent.joinpath(db_file)
 
 def db_connect():
 	conn = sqlite3.connect(database)

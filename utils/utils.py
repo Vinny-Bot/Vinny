@@ -17,6 +17,12 @@
 import re
 import datetime
 import discord
+import sys
+
+if sys.version_info >= (3, 11): # compat with older python (you'll need to install tomli from pip though)
+	import tomllib
+else:
+	import tomli as tomllib
 
 def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then to a timedelta
 	pattern = r"(\d+)([mhd]?)"
@@ -55,3 +61,12 @@ def permission_check(moderator: discord.Member, victim: discord.Member, moderati
 		return False
 	else:
 		return True
+
+def load_config():
+	try:
+		with open("config.toml", "rb") as f: # load config
+			config_data = tomllib.load(f)
+			return config_data
+	except tomllib.TOMLDecodeError: # incase config is literally invalid
+		print("Invalid TOML configuration detected, make sure to follow the config guide in the README.md")
+		return None

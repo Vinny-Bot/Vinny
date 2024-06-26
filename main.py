@@ -27,13 +27,9 @@ import time
 import schedule
 from utils import db
 from utils import embeds
+from utils import utils
 
 base_dir = Path(__file__).resolve().parent
-
-if sys.version_info >= (3, 11): # compat with older python (you'll need to install tomli from pip though)
-	import tomllib
-else:
-	import tomli as tomllib
 
 class bot(commands.Bot):
 	def __init__(self) -> None:
@@ -52,16 +48,7 @@ bot = bot()
 
 tree = bot.tree
 
-def load_config():
-	try:
-		with open("config.toml", "rb") as f: # load config
-			config_data = tomllib.load(f)
-			return config_data
-	except tomllib.TOMLDecodeError: # incase config is literally invalid
-		print("Invalid TOML configuration detected, make sure to follow the config guide in the README.md")
-		return None
-
-config_data = load_config()
+config_data = utils.load_config()
 token = config_data['discord']['token']
 intents = discord.Intents.default()
 

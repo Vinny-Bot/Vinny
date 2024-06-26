@@ -1,2 +1,5 @@
 [discord]
 token = "Place your bot token here"
+
+[database]
+file = "moderation.db" # if the user wants to place a database within a directory, they'll need to create that directory in advance

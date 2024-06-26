@@ -26,11 +26,14 @@ python ./main.py
 ```
 
 ### Configuration guide
-The configuration is just a simple toml file, all you have to do is copy `config.toml.sample` into `config.toml`, and then add the bot token to the `token` key under the `[discord]` table.
+The configuration is just a simple toml file, all you have to do is copy `config.toml.sample` into `config.toml`, and then add the bot token to the `token` key under the `[discord]` table and (at your option), add a custom database file value.
 
 Example:
 ```toml
 [discord]
 token = "MjEzMjkwMTY3NDA5MTgwNjcy.8JFhmK.nMMfj8laiN6kknmbPIEtrfr4nk99_4rEDxles"
+
+[database]
+file = "moderation.db" # if the user wants to place a database within a directory, they'll need to create that directory in advance
 ```
 (token for demonstration purposes, it isn't real)
