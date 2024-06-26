@@ -44,7 +44,7 @@ def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then 
 	else:
 		raise ValueError(f"Invalid duration format: {duration_str}")
 
-def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str):
+def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str): # someone please make a PR to improve this
 	if moderation_type == "Warn":
 		if moderator.guild_permissions.moderate_members is True:
 			if victim.guild_permissions.moderate_members is True:
