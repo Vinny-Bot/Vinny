@@ -206,7 +206,7 @@ class moderation(commands.Cog):
 				embed.add_field(name="Sanction", value=f"{moderation[6]}")
 				embed.add_field(name="Reason", value=f"{moderation[5]}")
 				embed.add_field(name="Duration", value=f"{moderation[8]}")
-				embed.add_field(name="Time", value=f"<t:{int(moderation[9])}>")
+				embed.add_field(name="Time", value=f"<t:{int(float(moderation[7]))}>")
 				embed.add_field(name="Active", value=f"{active}")
 				await interaction.response.send_message(embed=embed)
 			except Exception as e:
