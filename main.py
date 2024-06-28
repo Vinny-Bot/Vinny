@@ -20,6 +20,7 @@ import asyncio
 from discord.ext import commands
 from pathlib import Path
 from utils import utils
+import sys
 
 base_dir = Path(__file__).resolve().parent
 
@@ -61,7 +62,11 @@ async def loadcogs():
 	extensions_path = base_dir / 'exts'
 	for files in os.listdir(extensions_path):
 		if files.endswith(".py"):
-			await bot.load_extension(f'exts.{files[:-3]}')
+			if files[:-3] != "ipc":
+				await bot.load_extension(f'exts.{files[:-3]}')
+			elif files[:-3] == "ipc" and "--enable-ipc" in sys.argv:
+				await bot.load_extension(f'exts.{files[:-3]}')
+				print("IPC extension enabled")
 
 async def init():
 	async with bot:
