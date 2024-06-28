@@ -129,3 +129,11 @@ async def member_remove(member: discord.Member):
 	embed.add_field(name="User information", value=f"{member.mention}\n{member.name}\n{member.id}")
 	embed.set_thumbnail(url=member.avatar)
 	return embed
+
+async def moderation_change_reason(moderator: discord.Member, moderation_id: str, moderation_type: str, new_reason: str, old_reason: str):
+	embed = discord.Embed(title=f"Moderation `{moderation_id}` - {moderation_type} (Reason changed)", color=16753920, timestamp=datetime.datetime.now())
+	embed.add_field(name="Moderator", value=f"{moderator.mention}")
+	embed.add_field(name="Old reason", value=f"`{old_reason}`")
+	embed.add_field(name="New reason", value=f"`{new_reason}`")
+	embed.set_thumbnail(url=moderator.avatar)
+	return embed

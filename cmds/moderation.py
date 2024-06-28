@@ -215,5 +215,40 @@ class moderation(commands.Cog):
 		else:
 			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
 
+	@app_commands.command(description="Change moderation reason")
+	@app_commands.rename(moderation_id='moderation')
+	@app_commands.describe(moderation_id="Moderation to change reason of (Provide ID)")
+	@app_commands.describe(new_reason="New moderation reason")
+	@app_commands.checks.has_permissions(moderate_members=True)
+	async def reason(self,interaction: discord.Interaction, moderation_id: int, new_reason: str, notify: bool = True):
+		conn, c = db.db_connect()
+		moderation = db.get_moderation_by_id(moderation_id, c)
+		if moderation is not None and moderation[1] == interaction.guild.id:
+			try:
+				notified = "notified of this change"
+				if not notify:
+					notified = "not notified of this change"
+				c.execute('SELECT reason FROM moderations WHERE moderation_id=?', (moderation_id,))
+				old_reason = c.fetchone()[0]
+				c.execute('UPDATE moderations SET reason=? WHERE moderation_id=?', (new_reason, moderation_id,))
+				conn.commit()
+				await interaction.response.send_message(f"Updated moderation `{moderation_id}`: Reason changed from `{old_reason}` to `{new_reason}`. The user was {notified}")
+				embed = await embeds.moderation_change_reason(interaction.user, moderation_id, moderation[4], new_reason, old_reason)
+				log_channel_id = db.get_log_channel(interaction.guild.id, c)
+				log_channel = await self.bot.fetch_channel(log_channel_id)
+				await log_channel.send(embed=embed)
+				if notify:
+					try:
+						victim = await interaction.guild.fetch_member(moderation[2])
+						channel = await victim.create_dm()
+						await channel.send(embed=embed)
+					except Exception:
+						pass
+			except Exception as e:
+				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+		else:
+			await interaction.response.send_message(f"Invalid moderation", ephemeral=True)
+		conn.close()
+
 async def setup(bot):
 	await bot.add_cog(moderation(bot))
