@@ -37,3 +37,6 @@ token = "MjEzMjkwMTY3NDA5MTgwNjcy.8JFhmK.nMMfj8laiN6kknmbPIEtrfr4nk99_4rEDxles"
 file = "moderation.db" # if the user wants to place a database within a directory, they'll need to create that directory in advance
 ```
 (token for demonstration purposes, it isn't real)
+
+### TODO:
+- Add dashboard (using Flask 3)
