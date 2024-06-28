@@ -169,6 +169,7 @@ class moderation(commands.Cog):
 	@app_commands.command(description="Mark moderation as inactive or active")
 	@app_commands.rename(moderation_id='moderation')
 	@app_commands.describe(moderation_id="Moderation to mark inactive (Provide ID)")
+	@app_commands.checks.has_permissions(moderate_members=True)
 	async def mark_moderation(self,interaction: discord.Interaction, moderation_id: int, mark: Literal["Inactive", "Active"]):
 		conn, c = db.db_connect()
 		moderation = db.get_moderation_by_id(moderation_id, c)
