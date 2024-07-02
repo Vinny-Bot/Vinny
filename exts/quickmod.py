@@ -135,8 +135,8 @@ class quickmod(commands.Cog):
 						duration = quick_mod_action["duration"]
 						display_duration = duration
 						if quick_mod_action["sanction"] == "S4":
-							duration = None
-							display_duration = "inf"
+							duration = 'N/A'
+							display_duration = "N/A"
 						moderation_id = db.insert_moderation(guild_id=message.guild.id, user_id=quick_mod_action["message"].author.id, moderator_id=message.author.id, moderation_type=moderation_type, reason=f"[Quickmod] {message.content}", severity=quick_mod_action["sanction"], time=str(time.time()), duration=duration, conn=conn, c=c)
 						try:
 							channel = await quick_mod_action["message"].author.create_dm()

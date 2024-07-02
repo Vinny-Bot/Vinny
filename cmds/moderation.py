@@ -90,6 +90,8 @@ class moderation(commands.Cog):
 				user_id = victim.id
 				moderator_id = interaction.user.id
 				conn, c = db.db_connect()
+				if severity == 'S4':
+					duration = 'N/A'
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
 				conn.close()
 				if purge == "No":
@@ -102,8 +104,6 @@ class moderation(commands.Cog):
 				except Exception:
 					pass
 				await victim.ban(delete_message_days=delete_days, reason=f"{reason} - {interaction.user.name}\nbanned for {duration}")
-				if severity == 'S4':
-					duration = 'inf'
 				await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`{duration}`**: **{severity}. {reason}**")
 				await moderation.log_embed(self,victim=victim, severity=severity, duration=duration, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
 			except Exception as e:
