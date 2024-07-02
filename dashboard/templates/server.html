@@ -23,65 +23,65 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 {% extends "base.html" %}
 {% block content %}
 <section class="hero-head">
-    <div class="container" style="display: flex; align-items: center;">
-        <span style="margin-right: 10px;"><div class="image is-32x32"><img class="is-rounded" src="{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}"></div></span>
-        <span class="server-dash-text is-size-4 has-text-weight-normal">{{ guild.name }} <a href="/dashboard/server/{{ guild.id }}/moderations/page/1" class="tag">View moderations</a></span>
-        <br>
-    </div>
-    <br><br>
-    <div class="container hero">
-        <div class="panel is-primary">
-            <p class="panel-heading">Channel configuration</p>
-            <form method="POST" class="field">
-            <div class="panel-block">
-                <div class="field">
-                    <label class="label">Moderation log channel</label>
-                    <div class="control">
-                        <div class="select">
-                            <select id="log_channel" name="log_channel">>
-                                <option value="0">None</option>
-                                {% for id, name in guild_channels.items() %}
-                                    <option value="{{ id }}">{{ name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-block">
-                <div class="field">
-                    <label class="label">Event log channel</label>
-                    <div class="control">
-                        <div class="select">
-                            <select id="event_log_channel" name="event_log_channel">>
-                                <option value="0">None</option>
-                                {% for id, name in guild_channels.items() %}
-                                    <option value="{{ id }}">{{ name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel-block">
-                <div class="field is-grouped">
-                    <div class="control">
-                        <input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ log_channel }}">
-                        <input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ event_log_channel }}">
-                        <button type="submit" class="button is-primary">Save</button><br>
-                        {% if saved == True %}
-                            <span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
+	<div class="container" style="display: flex; align-items: center;">
+		<span style="margin-right: 10px;"><div class="image is-32x32"><img class="is-rounded" src="{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}"></div></span>
+		<span class="server-dash-text is-size-4 has-text-weight-normal">{{ guild.name }} <a href="/dashboard/server/{{ guild.id }}/moderations/page/1" class="tag">View moderations</a></span>
+		<br>
+	</div>
+	<br><br>
+	<div class="container hero">
+		<div class="panel is-primary">
+			<p class="panel-heading">Channel configuration</p>
+			<form method="POST" class="field">
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Moderation log channel</label>
+					<div class="control">
+						<div class="select">
+							<select id="log_channel" name="log_channel">>
+								<option value="0">None</option>
+								{% for id, name in guild_channels.items() %}
+									<option value="{{ id }}">{{ name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Event log channel</label>
+					<div class="control">
+						<div class="select">
+							<select id="event_log_channel" name="event_log_channel">>
+								<option value="0">None</option>
+								{% for id, name in guild_channels.items() %}
+									<option value="{{ id }}">{{ name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field is-grouped">
+					<div class="control">
+						<input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ log_channel }}">
+						<input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ event_log_channel }}">
+						<button type="submit" class="button is-primary">Save</button><br>
+						{% if saved == True %}
+							<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
+						{% endif %}
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
 </section>
 <script>
-    $(document).ready(function() {
-        $("#log_channel").val(document.getElementById("db_log_channel").value)
-        $("#event_log_channel").val(document.getElementById("db_event_log_channel").value)
-    });
+	$(document).ready(function() {
+		$("#log_channel").val(document.getElementById("db_log_channel").value)
+		$("#event_log_channel").val(document.getElementById("db_event_log_channel").value)
+	});
 </script>
 {% endblock %}

@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.0.0"
+dashboard_version = "1.1.0"
 
 app = Flask(__name__)
 
@@ -55,7 +55,7 @@ def index():
 	user = None
 	if OAuth2.authorized:
 		user = OAuth2.fetch_user()
-	return render_template('index.html', user=user, authorized=OAuth2.authorized)
+	return render_template('index.html', user=user, authorized=OAuth2.authorized, title=f"Homepage", description=f"Welcome to Vinny! A free and open-source moderation bot based on sanctions", url=f"{config_data['dashboard']['url']}{url_for('index')}")
 
 @app.context_processor
 def inject_global_vars():
@@ -97,7 +97,7 @@ def dashboard():
 			guilds_array.append(guild)
 
 	guilds_array.sort(key=lambda x: x.status == False)
-	return render_template("dashboard.html", guilds=guilds_array, user=user)
+	return render_template("dashboard.html", guilds=guilds_array, user=user, title=f"Dashboard", description=f"View all available servers", url=f"{config_data['dashboard']['url']}{url_for('dashboard')}")
 
 @app.route("/dashboard/server/<int:guild_id>", methods=['POST', 'GET'])
 @requires_authorization
@@ -133,12 +133,12 @@ def server_view(guild_id):
 		db_log_channel = db.get_log_channel(guild_id, c)
 		db_event_log_channel = db.get_event_log_channel(guild_id, c)
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, log_channel=db_log_channel, event_log_channel=db_event_log_channel)
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, log_channel=db_log_channel, event_log_channel=db_event_log_channel, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 	else:
 		db_log_channel = db.get_log_channel(guild_id, c)
 		db_event_log_channel = db.get_event_log_channel(guild_id, c)
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, log_channel=db_log_channel, event_log_channel=db_event_log_channel)
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, log_channel=db_log_channel, event_log_channel=db_event_log_channel, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 
 @app.route("/dashboard/server/<int:guild_id>/moderations/")
 async def moderations_redirect(guild_id):
@@ -193,7 +193,7 @@ async def moderations(guild_id, page_number):
 	else:
 		return "Invalid page", 403
 	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
-	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number)
+	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}")
 
 if __name__ == '__main__':
 	app.run(debug=True)
