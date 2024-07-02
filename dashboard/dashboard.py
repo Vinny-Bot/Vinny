@@ -93,7 +93,6 @@ def dashboard():
 
 	for guild in guilds:
 		if guild.permissions.administrator:
-			print(guild.id)
 			guild.status = True if guild.id in bot_guilds else False
 			guilds_array.append(guild)
 
@@ -127,7 +126,6 @@ def server_view(guild_id):
 	if request.method == 'POST':
 		log_channel = request.form["log_channel"]
 		event_log_channel = request.form["event_log_channel"]
-		print(guild_channels.response)
 		if log_channel == 0 or log_channel in guild_channels.response:
 			db.set_log_channel(guild_id, log_channel, conn, c)
 		if event_log_channel == 0 or event_log_channel in guild_channels.response:
