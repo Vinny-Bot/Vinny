@@ -190,7 +190,6 @@ async def moderations(guild_id, page_number):
 	except Exception:
 		return "Internal error", 403
 	minimum_page = total_pages - (total_pages - 1)
-	print(page)
 	if minimum_page <= page <= total_pages:
 		pass
 	else:
