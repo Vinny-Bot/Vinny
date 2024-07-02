@@ -1,0 +1,47 @@
+<!-- 
+vinny - discord moderation bot
+Copyright (C) 2024 0vf
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+NOTE: If you wanna use my dashboard module/IPC extension without complying with above terms,
+then contact me for inquiries/questions for permission. You will only be able to
+use my commits if you have received permission from me. <0vfx@proton.me>
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="section container">
+	<h1 class="title has-text-centered">Vinny</h1>
+	<h2 class="subtitle has-text-centered">Simple, functional, extensible Discord bot</h2>
+	<div class="buttons has-addons is-centered">
+		{% if not authorized %}
+			<a class="button is-link" href="/login"><i class="fa-brands fa-discord icon-text"></i>Log in via Discord</a>
+		{% else %}
+			<a class="button is-link" href="/dashboard"><i class="fa-solid fa-tv icon-text"></i>Open dashboard</a>
+		{% endif %}
+		<a class="button is-primary" href="https://github.com/0vf/vinny/blob/main/README.md"><i class="fa-solid fa-question icon-text"></i>Learn More</a>
+	</div>
+	<div class="section">
+		<h1 class="title has-text-centered">Features</h1>
+		<div class="buttons has-addons is-centered">
+			<p class="button is-info"><i class="fa-solid fa-explosion icon-text"></i>Quickmod</p>
+			<p class="button is-warning"><i class="fa-solid fa-scroll icon-text"></i>Event Logs</p>
+			<p class="button is-danger"><i class="fa-solid fa-book icon-text"></i>Moderation Tracking</p>
+			<p class="button is-success"><i class="fa-solid fa-marker icon-text"></i>Moderation Marking</p>
+			<p class="button is-link"><i class="fa-solid fa-gavel icon-text"></i>Tempban Support</p>
+		</div>
+	</div>
+</div>
+{% endblock %}

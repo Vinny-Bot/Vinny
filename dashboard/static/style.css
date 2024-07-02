@@ -1,0 +1,93 @@
+/*
+vinny - discord moderation bot
+Copyright (C) 2024 0vf
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+NOTE: If you wanna use my dashboard module without complying with above terms,
+then contact me for inquiries/questions for permission. You will only be able to
+use my commits if you have received permission from me. <0vfx@proton.me>
+*/
+
+.icon-text {
+	margin-right: 5px;
+}
+.modal {
+	z-index: 1;
+}
+
+.modal-content {
+	margin: 15% auto;
+	padding: 20px;
+	border: 1px solid #1c1e21;
+	background-color: #1c1e21;
+	border-radius: 12px;
+	width: 80%;
+}
+
+.close {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.servers {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+}
+
+.server-icon {
+	width: 90px;
+	height: 90px;
+	background-size: cover;
+	background-position: center;
+	margin-bottom: 5px;
+}
+
+.is-server-button {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 100px;
+	height: 130px;
+	padding: 5px;
+	text-align: center;
+}
+
+.server-text {
+	font-size: 15px;
+	white-space: normal;
+	word-wrap: break-word;
+}
+
+.server-dash-text {
+	color: #383D49
+}
+
+@media (prefers-color-scheme: dark) {
+	.server-dash-text {
+		color: #FFFFFF
+	}
+}

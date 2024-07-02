@@ -144,3 +144,8 @@ def get_moderations_by_user_and_guild(guild_id: int, user_id: int, inactive: boo
 		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=?", (guild_id, user_id,))
 	moderations = c.fetchall()
 	return moderations
+
+def get_moderations_by_guild(guild_id: int, c: sqlite3.Cursor):
+	c.execute("SELECT * FROM moderations WHERE guild_id=?", (guild_id,))
+	moderations = c.fetchall()
+	return moderations

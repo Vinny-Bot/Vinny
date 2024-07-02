@@ -1,0 +1,99 @@
+<!-- 
+vinny - discord moderation bot
+Copyright (C) 2024 0vf
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+NOTE: If you wanna use my dashboard module/IPC extension without complying with above terms,
+then contact me for inquiries/questions for permission. You will only be able to
+use my commits if you have received permission from me. <0vfx@proton.me>
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="hero container">
+	<div class="panel is-danger">
+		<p class="panel-heading">Moderations in {{ guild_name }}</p>
+			<table class="table is-fullwidth is-striped is-hoverable">
+				<thead>
+					<th><abbr title="Moderation ID">ID</abbr></th>
+					<th>Type</th>
+					<th>Victim</th>
+					<th><abbr title="Moderator">Mod</abbr></th>
+					<th>Reason</th>
+					<th><abbr title="Duration">Dur</abbr></th>
+					<th>Time</th>
+					<th>Active</th>
+				</thead>
+				<tbody>
+					{% for moderation in chunk %}
+					<tr>
+						<th>{{ moderation[0] }}</th>
+						{% if moderation[4] == "Warn" %}
+						<th><span class="tag is-warning is-light">Warn - {{ moderation[6] }}</span></th>
+						{% elif moderation[4] == "Mute" %}
+						<th><span class="tag is-danger is-light">Mute - {{ moderation[6] }}</span></th>
+						{% elif moderation[4] == "Ban" and moderation[6] == "S3" %}
+						<th><span class="tag is-danger">Ban - {{ moderation[6] }}</span></th>
+						{% elif moderation[4] == "Ban" and moderation[6] == "S4" %}
+						<th><span class="tag is-danger">Ban - {{ moderation[6] }}</span></th>
+						{% endif %}
+						<th>{{ moderation[2] }}</th>
+						<th>{{ moderation[3] }}</th>
+						<th>{{ moderation[5] }}</th>
+						<th>{{ moderation[8] }}</th>
+						<th>{{ moderation[7] }}</th>
+						<th>{{ moderation[9] }}</th>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<div class="container panel-block" style="margin-top: -25px">
+				<div class="container has-text-centered">
+					<nav class="pagination is-centered" role="navigation" aria-label="pagination">
+						{% if page > 1 %}
+							<a class="pagination-previous" href="{{ url_for('moderations', guild_id=guild_id, page_number=page-1) }}">Previous</a>
+						{% else %}
+							<a class="pagination-previous is-disabled">Previous</a>
+						{% endif %}
+						{% if page < total_pages %}
+							<a class="pagination-next" href="{{ url_for('moderations', guild_id=guild_id, page_number=page+1) }}">Next</a>
+						{% else %}
+							<a class="pagination-next is-disabled">Next</a>
+						{% endif %}
+						<ul class="pagination-list">
+							{% set left_boundary = (page - 2 if page == total_pages else page - 1) if page > 1 else 1 %}
+							{% set right_boundary = (page + 2 if page == 1 else page + 1) if page < total_pages else total_pages %}
+							{% set left_ellipsis = left_boundary > 1 %}
+							{% set right_ellipsis = right_boundary < total_pages %}
+							{% for p in range(1, total_pages + 1) %}
+								{% if p == page %}
+									<li><a class="pagination-link is-current" style="background-color: #FF5C7B; border-color: #E65974; color: #1A0006" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}">{{ p }}</a></li>
+								{% elif p >= left_boundary and p <= right_boundary %}
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}">{{ p }}</a></li>
+								{% elif left_ellipsis and p == left_boundary - 1 %}
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=1) }}">{{ 1 }}</a></li>
+									<li><span class="pagination-ellipsis">...</span></li>
+								{% elif right_ellipsis and p == right_boundary + 1 %}
+									<li><span class="pagination-ellipsis">...</span></li>
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=total_pages) }}">{{ total_pages }}</a></li>
+								{% endif %}
+							{% endfor %}
+						</ul>
+					</nav>
+				</div>
+			</div>
+	</div>
+</div>
+{% endblock %}

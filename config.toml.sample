@@ -1,5 +1,12 @@
 [discord]
 token = "Place your bot token here"
+secret = "" # Client secret (for OAuth2), only necessary when using dashboard
+id = "" # Client ID, only necessary when using dashboard
 
 [database]
 file = "moderation.db" # if the user wants to place a database within a directory, they'll need to create that directory in advance
+
+[dashboard] # EVERYTHING UNDER HERE IS ONLY NECESSARY WHEN YOU USE THE DASHBOARD
+url = "https://127.0.0.1:5000" # Set to appropriate URL
+ipc_secret = "Set IPC secret key" # Set to a secret key, important so that the IPC traffic is encrypted.
+secret = "Set secret key" # IMPORTANT! This is used to encrypt cookies.
