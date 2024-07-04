@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.1.0"
+dashboard_version = "1.1.1"
 
 app = Flask(__name__)
 
@@ -56,6 +56,13 @@ def index():
 	if OAuth2.authorized:
 		user = OAuth2.fetch_user()
 	return render_template('index.html', user=user, authorized=OAuth2.authorized, title=f"Homepage", description=f"Welcome to Vinny! A free and open-source moderation bot based on sanctions", url=f"{config_data['dashboard']['url']}{url_for('index')}")
+
+@app.route('/learnmore')
+def learnmore():
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('learnmore.html', user=user, authorized=OAuth2.authorized, title=f"Learn More", description=f"Learn more about Vinny", url=f"{config_data['dashboard']['url']}{url_for('learnmore')}")
 
 @app.context_processor
 def inject_global_vars():

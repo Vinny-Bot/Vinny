@@ -45,9 +45,9 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 						{% elif moderation[4] == "Mute" %}
 						<th><span class="tag is-danger is-light">Mute - {{ moderation[6] }}</span></th>
 						{% elif moderation[4] == "Ban" and moderation[6] == "S3" %}
-						<th><span class="tag is-danger">Ban - {{ moderation[6] }}</span></th>
+						<th><span class="tag is-danger is-dark">Ban - {{ moderation[6] }}</span></th>
 						{% elif moderation[4] == "Ban" and moderation[6] == "S4" %}
-						<th><span class="tag is-danger">Ban - {{ moderation[6] }}</span></th>
+						<th><span class="tag is-danger" style="background-color: #C01D3C; color: #1A0006;">Ban - {{ moderation[6] }}</span></th>
 						{% endif %}
 						<th>{{ moderation[2] }}</th>
 						<th>{{ moderation[3] }}</th>

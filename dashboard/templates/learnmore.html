@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container hero section">
+	<h1 class="title">Learn more about Vinny</h1>
+	<p class="subtitle">Key features and functionalities</p>
+	<div class="columns is-multiline">
+		<div class="column is-6-desktop is-12-mobile">
+			<article class="message is-info">
+				<div class="message-header">
+					<p><i class="fas fa-gavel"></i> Sanction-Based Moderation</p>
+				</div>
+				<div class="message-body">
+					Vinny utilizes a sanction-based system for moderation, aiming for consistency and fairness.<br>
+					<span class="tag is-warning is-light">Warn - S1</span> <span class="tag is-danger is-light">Mute - S2</span> <span class="tag is-danger is-dark">Tempban - S3</span> <span class="tag is-danger is-dark" style="background-color: #C01D3C; color: #1A0006;">Permban - S4</span> 
+				</div>
+			</article>
+		</div>
+		<div class="column is-6-desktop is-12-mobile">
+			<article class="message is-success">
+				<div class="message-header">
+					<p><i class="fab fa-github"></i> Open Source</p>
+				</div>
+				<div class="message-body">
+					Being free and open source, Vinny allows for community contributions. The code is completely open for anyone to see!
+				</div>
+			</article>
+		</div>
+		<div class="column is-6-desktop is-12-mobile">
+			<article class="message is-warning">
+				<div class="message-header">
+					<p><i class="fas fa-book"></i> Logging Features</p>
+				</div>
+				<div class="message-body">
+					Vinny can log various server activities, including deletions, edits, joins, and leaves.
+				</div>
+			</article>
+		</div>
+		<div class="column is-6-desktop is-12-mobile">
+			<article class="message is-link">
+				<div class="message-header">
+					<p><i class="fas fa-users"></i> Origin</p>
+				</div>
+				<div class="message-body">
+					Vinny was developed for use in VinegarHQ, though anyone is free to use it!
+				</div>
+			</article>
+		</div>
+		<div class="column is-full">
+			<article class="message is-primary">
+				<div class="message-header">
+					<p><i class="fas fa-tachometer-alt"></i> User-Friendly Dashboard</p>
+				</div>
+				<div class="message-body">
+					Vinny features a dashboard for easy configuration and public moderation activity overview.
+				</div>
+			</article>
+		</div>
+		<div class="column is-full">
+			<article class="message is-danger">
+				<div class="message-header">
+					<p><i class="fas fa-bolt"></i> QuickMod</p>
+				</div>
+				<div class="message-body">
+					QuickMod enables quick access to moderation tools (such as warning, muting, and banning) by 💥 reacting to messages.
+				</div>
+			</article>
+		</div>
+	</div>
+</div>
+{% endblock %}
