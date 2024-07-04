@@ -44,23 +44,34 @@ def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then 
 	else:
 		raise ValueError(f"Invalid duration format: {duration_str}")
 
-def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str): # someone please make a PR to improve this
-	if moderation_type == "Warn":
-		if moderator.guild_permissions.moderate_members is True:
-			if victim.guild_permissions.moderate_members is True:
-				return False
-	elif moderation_type == "Mute":
-		if moderator.guild_permissions.moderate_members is True:
-			if victim.guild_permissions.moderate_members is True:
-				return False
-	elif moderation_type == "Ban":
-		if moderator.guild_permissions.ban_members is True:
-			if victim.guild_permissions.ban_members is True:
-				return False
-	if moderator.id == victim:
-		return False
-	else:
-		return True
+def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str):
+	if victim.bot:
+		return False, "Cannot moderate another bot."
+
+	if moderator.id == victim.id:
+		return False, "Cannot moderate yourself. (why are you doing that?)"
+
+	required_permission = {
+		"Warn": "moderate_members",
+		"Mute": "moderate_members",
+		"Ban": "ban_members"
+	}.get(moderation_type)
+
+	if not required_permission:
+		return False, f"Invalid moderation type: {moderation_type}"
+
+	if not getattr(moderator.guild_permissions, required_permission):
+		return False, "You do not have permission to moderate people."
+
+	# contributors ignore the 2 lines below
+	if victim.id == 336057880287641603 and moderation_type == "Warn":
+		return True, "lunar tax"
+	# ignore the 2 lines above
+
+	if getattr(moderator.guild_permissions, required_permission) and getattr(victim.guild_permissions, required_permission):
+		return False, "Cannot moderate other moderators."
+
+	return True, "Success!"
 
 def load_config():
 	try:

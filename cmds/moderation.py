@@ -53,7 +53,8 @@ class moderation(commands.Cog):
 	@app_commands.rename(victim='member')
 	@app_commands.checks.has_permissions(moderate_members=True)
 	async def mute(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S2', 'N/A'], duration: str, reason: str):
-		if utils.permission_check(moderator=interaction.user, victim=victim, moderation_type="Mute"):
+		success, message = utils.permission_check(interaction.user, victim, "Mute")
+		if success:
 			try:
 				guild_id = interaction.guild.id
 				user_id = victim.id
@@ -73,7 +74,7 @@ class moderation(commands.Cog):
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
-			await interaction.response.send_message("Invalid permissions", ephemeral=True)
+			await interaction.response.send_message(message, ephemeral=True)
 
 	@app_commands.command(description="Ban a member")
 	@app_commands.describe(victim="Member to sanction")
@@ -82,9 +83,9 @@ class moderation(commands.Cog):
 	@app_commands.describe(reason="Reason of ban")
 	@app_commands.describe(purge="Purge all messages within 7 days")
 	@app_commands.rename(victim='member')
-	@app_commands.checks.has_permissions(ban_members=True)
 	async def ban(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S3', 'S4'], duration: str, reason: str, purge: Literal['No', 'Yes']):
-		if utils.permission_check(moderator=interaction.user, victim=victim, moderation_type="Ban"):
+		success, message = utils.permission_check(interaction.user, victim, "Ban")
+		if success:
 			try:
 				guild_id = interaction.guild.id
 				user_id = victim.id
@@ -109,16 +110,16 @@ class moderation(commands.Cog):
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
-			await interaction.response.send_message("Invalid permissions", ephemeral=True)
+			await interaction.response.send_message(message, ephemeral=True)
 
 	@app_commands.command(description="Warn a member")
 	@app_commands.describe(victim="Member to sanction")
 	@app_commands.describe(severity="Type of sanction")
 	@app_commands.describe(reason="Reason of warn")
 	@app_commands.rename(victim='member')
-	@app_commands.checks.has_permissions(moderate_members=True)
 	async def warn(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S1', 'N/A'], reason: str):
-		if utils.permission_check(moderator=interaction.user, victim=victim, moderation_type="Warn"):
+		success, message = utils.permission_check(interaction.user, victim, "Warn")
+		if success:
 			try:
 				guild_id = interaction.guild.id
 				user_id = victim.id
@@ -136,7 +137,7 @@ class moderation(commands.Cog):
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
-			await interaction.response.send_message("Invalid permissions", ephemeral=True)
+			await interaction.response.send_message(message, ephemeral=True)
 
 	@app_commands.command(description="View moderations of a member")
 	@app_commands.describe(inactive="View inactive moderations as well")
