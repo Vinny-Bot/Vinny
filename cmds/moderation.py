@@ -179,7 +179,7 @@ class moderation(commands.Cog):
 			else:
 				active = True
 			try:
-				db.set_moderation_inactive_or_active(moderation_id, active)
+				db.set_moderation_inactive_or_active(moderation_id, active, conn, c)
 				await interaction.response.send_message(f"Marked moderation `{moderation_id}` as {mark}")
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
