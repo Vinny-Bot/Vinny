@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.1.1"
+dashboard_version = "1.1.2"
 
 app = Flask(__name__)
 
@@ -157,10 +157,6 @@ async def moderations(guild_id, page_number):
 	if OAuth2.authorized:
 		user = OAuth2.fetch_user()
 
-	guild_obj = None
-	for guild in OAuth2.fetch_guilds():
-		if guild.id == guild_id:
-			guild_obj = guild
 	conn, c = db.db_connect()
 	page = 1
 	total_pages = 0
