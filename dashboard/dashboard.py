@@ -21,7 +21,7 @@
 import asyncio
 from datetime import datetime
 from time import strftime
-from flask import Flask, render_template, redirect, request, url_for
+from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized, models
 from discord.ext.ipc import Client
 from discord import Guild
@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.2.0"
+dashboard_version = "1.2.1"
 
 app = Flask(__name__)
 
@@ -49,6 +49,27 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 OAuth2 = DiscordOAuth2Session(app)
 ipc = Client(secret_key=config_data['dashboard']['ipc_secret'])
+
+@app.errorhandler(404)
+def page_not_found(error):
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('html_error.html', user=user, error="404", error_message="Resource not found", title="404 Not found", description="404 Not found"), 404
+
+@app.errorhandler(401)
+def page_not_found(error):
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('html_error.html', user=user, error="403", error_message="Unauthorized", title="401 Unauthorized", description="401 Unauthorized"), 401
+
+@app.errorhandler(403)
+def page_not_found(error):
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('html_error.html', user=user, error="403", error_message="Forbidden", title="401 Forbidden", description="401 Forbidden"), 403
 
 @app.route('/')
 def index():
@@ -204,11 +225,13 @@ async def moderations(guild_id, page_number):
 				page = page + 1
 	except Exception:
 		return "Internal error", 403
+	if hero_chunk is None and page_number == 1:
+		return render_template('html_error.html', user=user, error="404", error_message="No moderations found for this server", title="404 Not found", description="404 Not found"), 404
 	minimum_page = total_pages - (total_pages - 1)
 	if minimum_page <= page <= total_pages:
 		pass
 	else:
-		return "Invalid page", 403
+		abort(404)
 	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
 	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}", order=order)
 
