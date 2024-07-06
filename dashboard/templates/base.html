@@ -40,6 +40,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 		<link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@creativebulma/bulma-tooltip@1.2.0/dist/bulma-tooltip.min.css">
 	</head>
 	
 	<div class="container">
@@ -80,7 +81,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 				<div class="modal-content">
 					<span class="close">&times;</span>
 					<p>{{ user.name }}</p>
-					<p>{{ user.email }}</p>
+					<p>{{ user.id }}</p>
 					<br>
 					<a class="button is-danger" href="/logout">Log out</a>
 				</div>

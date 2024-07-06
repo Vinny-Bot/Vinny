@@ -30,15 +30,16 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	</div>
 	<br><br>
 	<div class="container hero">
+		<form method="POST" class="field">
 		<div class="panel is-primary">
 			<p class="panel-heading">Channel configuration</p>
-			<form method="POST" class="field">
+			
 			<div class="panel-block">
 				<div class="field">
 					<label class="label">Moderation log channel</label>
 					<div class="control">
 						<div class="select">
-							<select id="log_channel" name="log_channel">>
+							<select id="log_channel" name="log_channel">
 								<option value="0">None</option>
 								{% for id, name in guild_channels.items() %}
 									<option value="{{ id }}">{{ name }}</option>
@@ -53,7 +54,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<label class="label">Event log channel</label>
 					<div class="control">
 						<div class="select">
-							<select id="event_log_channel" name="event_log_channel">>
+							<select id="event_log_channel" name="event_log_channel">
 								<option value="0">None</option>
 								{% for id, name in guild_channels.items() %}
 									<option value="{{ id }}">{{ name }}</option>
@@ -63,25 +64,44 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					</div>
 				</div>
 			</div>
+		</div>
+		<div class="panel is-link">
+			<p class="panel-heading">Moderation configuration</p>
 			<div class="panel-block">
-				<div class="field is-grouped">
+				<div class="field">
+					<label class="label" data-tooltip="Filter & log messages hidden in message nonces.">Nonce filtering <i class="fas fa-info-circle"></i></label>
 					<div class="control">
-						<input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ log_channel }}">
-						<input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ event_log_channel }}">
-						<button type="submit" class="button is-primary">Save</button><br>
-						{% if saved == True %}
-							<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
-						{% endif %}
+						<div class="select">
+							<select id="nonce_filter" name="nonce_filter">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
 					</div>
 				</div>
-			</form>
+			</div>
 		</div>
+		<div class="panel is-success">
+			<div class="panel-block">
+				<div class="control">
+					<input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ log_channel }}">
+					<input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ event_log_channel }}">
+					<input type="hidden" id="db_nonce_filter" name="db_nonce_filter" value="{{ nonce_filter }}">
+					<button type="submit" class="button is-primary">Save</button><br>
+					{% if saved == True %}
+						<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+		</form>
 	</div>
 </section>
 <script>
 	$(document).ready(function() {
 		$("#log_channel").val(document.getElementById("db_log_channel").value)
 		$("#event_log_channel").val(document.getElementById("db_event_log_channel").value)
+		$("#nonce_filter").val(document.getElementById("db_nonce_filter").value)
 	});
 </script>
 {% endblock %}

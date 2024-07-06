@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.1.2"
+dashboard_version = "1.2.0"
 
 app = Flask(__name__)
 
@@ -70,7 +70,7 @@ def inject_global_vars():
 
 @app.route("/login/")
 def login():
-	return OAuth2.create_session()
+	return OAuth2.create_session(scope=["identify", "guilds"])
 
 @app.route("/logout/")
 def logout():
@@ -133,19 +133,28 @@ def server_view(guild_id):
 	if request.method == 'POST':
 		log_channel = request.form["log_channel"]
 		event_log_channel = request.form["event_log_channel"]
+		nonce_filter = request.form["nonce_filter"]
+		if nonce_filter == "0":
+			nonce_filter = 0
+		else:
+			nonce_filter = 1
 		if log_channel == 0 or log_channel in guild_channels.response:
 			db.set_log_channel(guild_id, log_channel, conn, c)
 		if event_log_channel == 0 or event_log_channel in guild_channels.response:
 			db.set_event_log_channel(guild_id, event_log_channel, conn, c)
+		if nonce_filter == 0 or nonce_filter == 1:
+			db.set_nonce_filter_status(guild_id, nonce_filter, conn, c)
 		db_log_channel = db.get_log_channel(guild_id, c)
 		db_event_log_channel = db.get_event_log_channel(guild_id, c)
+		db_nonce_filter = db.get_nonce_filter_status(guild_id, c)
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, log_channel=db_log_channel, event_log_channel=db_event_log_channel, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, log_channel=db_log_channel, event_log_channel=db_event_log_channel, nonce_filter=db_nonce_filter, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 	else:
 		db_log_channel = db.get_log_channel(guild_id, c)
 		db_event_log_channel = db.get_event_log_channel(guild_id, c)
+		db_nonce_filter = db.get_nonce_filter_status(guild_id, c)
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, log_channel=db_log_channel, event_log_channel=db_event_log_channel, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, log_channel=db_log_channel, event_log_channel=db_event_log_channel, nonce_filter=db_nonce_filter, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 
 @app.route("/dashboard/server/<int:guild_id>/moderations/")
 async def moderations_redirect(guild_id):
@@ -183,6 +192,8 @@ async def moderations(guild_id, page_number):
 						mutable_moderation[9] = "No"
 					else:
 						mutable_moderation[9] = "Yes"
+					mutable_moderation.append(moderation[2])
+					mutable_moderation.append(moderation[3])
 					hero_chunk.append(tuple(mutable_moderation))
 			elif lock:
 				pass
