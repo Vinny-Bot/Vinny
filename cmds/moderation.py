@@ -59,7 +59,11 @@ class moderation(commands.Cog):
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				duration_delta = utils.parse_duration(duration)
+				try:
+					duration_delta = utils.parse_duration(duration)
+				except Exception:
+					await interaction.response.send_message("Please input valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+					return
 				conn, c = db.db_connect()
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
 				conn.close()
@@ -93,6 +97,12 @@ class moderation(commands.Cog):
 				conn, c = db.db_connect()
 				if severity == 'S4':
 					duration = 'N/A'
+				else:
+					try:
+						newdur = utils.parse_duration(duration)
+					except Exception:
+						await interaction.response.send_message("Please input valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+						return
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
 				conn.close()
 				if purge == "No":

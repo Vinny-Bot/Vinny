@@ -47,7 +47,7 @@ class unbans(commands.Cog):
 
 	async def look_for_unbans(self): # check every active tempban for an unban
 		conn, c = db.db_connect()
-		unbans = db.get_active_tempbans(c)
+		unbans = db.get_active_tempbans(conn, c)
 		now = datetime.datetime.now()
 
 		try:

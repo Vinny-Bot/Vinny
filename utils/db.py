@@ -84,14 +84,18 @@ def get_count_of_moderations(c: sqlite3.Cursor):
 	count = c.fetchone()[0]
 	return count
 
-def get_active_tempbans(c: sqlite3.Cursor): # this gave me a headache, TLDR: checks for "active" tempbans
+def get_active_tempbans(conn, c: sqlite3.Cursor): # this gave me a headache, TLDR: checks for "active" tempbans
 	c.execute("SELECT moderation_id, time, duration FROM moderations WHERE severity='S3' AND tempban_active=true")
 	results = []
 	for row in c.fetchall():
 		moderation_id = row[0]
 		time_unix = float(row[1])
 		duration_str = row[2]
-		duration_td = utils.parse_duration(duration_str)
+		try:
+			duration_td = utils.parse_duration(duration_str)
+		except Exception as e:
+			set_tempban_inactive(moderation_id, conn, c) # fix pre-hotfix invalid timeframes
+			continue
 		time_obj = datetime.fromtimestamp(time_unix)
 		updated_time = time_obj + duration_td # hooray, we now have a datetime object of when the user is supposed to be banned
 		results.append({
