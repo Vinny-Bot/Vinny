@@ -199,4 +199,4 @@ async def moderations(guild_id, page_number):
 	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}")
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run()
