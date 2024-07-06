@@ -175,6 +175,9 @@ async def moderations(guild_id, page_number):
 	moderations = db.get_moderations_by_guild(guild_id, c)
 	conn.close()
 	try:
+		order = request.args.get('order', default='newest', type=str)
+		if order == "newest":
+			moderations.reverse()
 		for i in range(0, len(moderations), 12):
 			chunk = moderations[i:i+12]
 			total_pages = total_pages + 1
@@ -207,7 +210,7 @@ async def moderations(guild_id, page_number):
 	else:
 		return "Invalid page", 403
 	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
-	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}")
+	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}", order=order)
 
 if __name__ == '__main__':
 	app.run()

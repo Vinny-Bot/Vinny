@@ -24,7 +24,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 {% block content %}
 <div class="hero container">
 	<div class="panel is-danger">
-		<p class="panel-heading">Moderations in {{ guild_name }}</p>
+		<p class="panel-heading">Moderations in {{ guild_name }} <a class="button is-small is-danger is-vcentered" href="?order={{ 'newest' if order == 'oldest' else 'oldest' }}">Sorting by: {{ order }}</a></p>
 			<table class="table is-fullwidth is-striped is-hoverable">
 				<thead>
 					<th><abbr title="Moderation ID">ID</abbr></th>
