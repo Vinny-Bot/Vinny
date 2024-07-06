@@ -142,5 +142,28 @@ class events(commands.Cog):
 		embed = await embeds.member_remove(member)
 		await channel.send(embed=embed)
 
+	@commands.Cog.listener()
+	async def on_message(self,message: discord.Message):
+			if isinstance(message.nonce, str) and not message.nonce.isdigit():
+				conn, c = db.db_connect()
+				nonce_filtering = db.get_nonce_filter_status(message.guild.id, c)
+				if nonce_filtering == 1:
+					try:
+						channel = await self.bot.fetch_channel(db.get_log_channel(message.guild.id, c))
+						print(channel.id)
+						await message.delete()
+						embed = discord.Embed(title="Hidden nonce message detected", color=16729932, timestamp=datetime.datetime.now())
+						embed.add_field(name="Author", value=f"<@{message.author.id}>\n{message.author.id}")
+						embed.add_field(name="Channel", value=f"<#{message.channel.id}>\n{message.channel.id}")
+						embed.add_field(name="Message ID", value=message.id)
+						embed.add_field(name="Message contents", value=f"```\n{message.content}\n```")
+						embed.add_field(name="Nonce contents", value=f"```\n{message.nonce}\n```")
+						embed.set_thumbnail(url=message.author.avatar)
+						await channel.send(embed=embed)
+						conn.close()
+					except Exception as e:
+						print(e)
+						conn.close()
+
 async def setup(bot):
 	await bot.add_cog(events(bot))

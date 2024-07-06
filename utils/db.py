@@ -56,8 +56,17 @@ def create_guilds_table():
 	c.execute('''CREATE TABLE IF NOT EXISTS guilds (
 					guild_id INTEGER PRIMARY KEY,
 					log_channel_id INTEGER DEFAULT NULL,
-					event_log_channel_id INTEGER DEFAULT NULL
+					event_log_channel_id INTEGER DEFAULT NULL,
+					nonce_filter BOOLEAN DEFAULT 0
 				)''')
+
+	c.execute("PRAGMA table_info(guilds)")
+	columns = [column[1] for column in c.fetchall()]
+	
+	if 'nonce_filter' not in columns:
+		c.execute('''
+			ALTER TABLE guilds ADD COLUMN nonce_filter BOOLEAN DEFAULT 0
+		''')
 
 	conn.commit()
 	conn.close()
@@ -110,7 +119,7 @@ def get_moderation_by_id(moderation_id, c: sqlite3.Cursor):
 	return moderation
 
 def set_moderation_inactive_or_active(moderation_id, active: bool, conn: sqlite3.Connection, c: sqlite3.Cursor):
-	c.execute('UPDATE moderations SET active=0 WHERE moderation_id=?', (moderation_id,))
+	c.execute('UPDATE moderations SET active=? WHERE moderation_id=?', (active, moderation_id,))
 	conn.commit()
 
 def set_tempban_inactive(moderation_id, conn: sqlite3.Connection, c: sqlite3.Cursor):
@@ -118,11 +127,11 @@ def set_tempban_inactive(moderation_id, conn: sqlite3.Connection, c: sqlite3.Cur
 	conn.commit()
 
 def set_log_channel(guild_id: int, channel_id: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
-	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, channel_id, get_event_log_channel(guild_id, c)))
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id, nonce_filter) VALUES (?, ?, ?, ?)', (guild_id, channel_id, get_event_log_channel(guild_id, c), get_nonce_filter_status(guild_id, c)))
 	conn.commit()
 
 def set_event_log_channel(guild_id: int, channel_id: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
-	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id) VALUES (?, ?, ?)', (guild_id, get_log_channel(guild_id, c), channel_id))
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id, nonce_filter) VALUES (?, ?, ?, ?)', (guild_id, get_log_channel(guild_id, c), channel_id, get_nonce_filter_status(guild_id, c)))
 	conn.commit()
 
 def get_log_channel(guild_id: int, c: sqlite3.Cursor) -> int:
@@ -153,3 +162,15 @@ def get_moderations_by_guild(guild_id: int, c: sqlite3.Cursor):
 	c.execute("SELECT * FROM moderations WHERE guild_id=?", (guild_id,))
 	moderations = c.fetchall()
 	return moderations
+
+def get_nonce_filter_status(guild_id: int, c: sqlite3.Cursor) -> int:
+	try:
+		c.execute('SELECT nonce_filter FROM guilds WHERE guild_id=?', (guild_id,))
+		nonce_filter = c.fetchone()[0]
+		return nonce_filter
+	except Exception:
+		return 1
+
+def set_nonce_filter_status(guild_id: int, status: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
+	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id, nonce_filter) VALUES (?, ?, ?, ?)', (guild_id, get_log_channel(guild_id, c), get_event_log_channel(guild_id, c), status))
+	conn.commit()
