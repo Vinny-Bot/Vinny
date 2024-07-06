@@ -150,7 +150,6 @@ class events(commands.Cog):
 				if nonce_filtering == 1:
 					try:
 						channel = await self.bot.fetch_channel(db.get_log_channel(message.guild.id, c))
-						print(channel.id)
 						await message.delete()
 						embed = discord.Embed(title="Hidden nonce message detected", color=16729932, timestamp=datetime.datetime.now())
 						embed.add_field(name="Author", value=f"<@{message.author.id}>\n{message.author.id}")
