@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container hero section">
+	<h1 class="title">Vinny Privacy Policy</h1>
+	<article class="message container">
+		<div class="message-header">
+			<p>Last updated: 07 Jul, 2024</p>
+			<p>Effective 07 Jul, 2024</p>
+		</div>
+		<div class="message-body">
+			<section>
+				<p class="title">Introduction</p>
+				<p class="subtitle">This privacy policy outlines how we handle your data when you use the Vinny bot on Discord.</p>
+			</section>
+			<br>
+			<section>
+				<p class="is-size-5"><strong>Guild Configuration</strong></p>
+				<p>
+					We store guild configurations in our database.
+					Upon bot removal, all configuration data will be deleted.
+				</p>
+			</section>
+			<br>
+			<section>
+				<p class="is-size-5"><strong>Moderation Data</strong></p>
+				<p>
+					Moderation data is stored permanently in our database. After guild removal, moderation data will be hidden from the web interface.
+				</p>
+			</section>
+			<br>
+			<section>
+				<p class="is-size-5"><strong>User Authentication</strong></p>
+				<p>
+					User authentication data is collected during Discord login and retained only for the duration of the OAuth2 session.
+				</p>
+			</section>
+			<br>
+			<section>
+				<p class="is-size-5"><strong>Data Security</strong></p>
+				<p>
+					We do not share your data with any third parties. All data is securely stored within our servers.
+				</p>
+			</section>
+			<br>
+		</div>
+		<br>
+		<p>
+			For GDPR inquiries, send an e-mail to <code>gdpr@vinny.pp.ua</code> (gdpr at vinny dot pp dot ua)
+		</p>
+	</article>
+</div>
+{% endblock %}

@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.2.1"
+dashboard_version = "1.2.2"
 
 app = Flask(__name__)
 
@@ -69,7 +69,14 @@ def page_not_found(error):
 	user = None
 	if OAuth2.authorized:
 		user = OAuth2.fetch_user()
-	return render_template('html_error.html', user=user, error="403", error_message="Forbidden", title="401 Forbidden", description="401 Forbidden"), 403
+	return render_template('html_error.html', user=user, error="403", error_message="Forbidden", title="403 Forbidden", description="403 Forbidden"), 403
+
+@app.errorhandler(500)
+def page_not_found(error):
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('html_error.html', user=user, error="500", error_message="Internal server error", title="500 Internal server error", description="401 Internal server error"), 403
 
 @app.route('/')
 def index():
@@ -84,6 +91,13 @@ def learnmore():
 	if OAuth2.authorized:
 		user = OAuth2.fetch_user()
 	return render_template('learnmore.html', user=user, authorized=OAuth2.authorized, title=f"Learn More", description=f"Learn more about Vinny", url=f"{config_data['dashboard']['url']}{url_for('learnmore')}")
+
+@app.route('/privacypolicy')
+def privacypolicy():
+	user = None
+	if OAuth2.authorized:
+		user = OAuth2.fetch_user()
+	return render_template('privacypolicy.html', user=user, authorized=OAuth2.authorized, title=f"Privacy Policy", description=f"Vinny privacy policy", url=f"{config_data['dashboard']['url']}{url_for('privacypolicy')}")
 
 @app.context_processor
 def inject_global_vars():
@@ -224,7 +238,10 @@ async def moderations(guild_id, page_number):
 			else:
 				page = page + 1
 	except Exception:
-		return "Internal error", 403
+		abort(500)
+	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
+	if guild_name is None:
+		abort(403)
 	if hero_chunk is None and page_number == 1:
 		return render_template('html_error.html', user=user, error="404", error_message="No moderations found for this server", title="404 Not found", description="404 Not found"), 404
 	minimum_page = total_pages - (total_pages - 1)
@@ -232,7 +249,7 @@ async def moderations(guild_id, page_number):
 		pass
 	else:
 		abort(404)
-	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
+
 	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}", order=order)
 
 if __name__ == '__main__':
