@@ -20,6 +20,7 @@
 
 from typing import Dict
 import discord
+from discord import app_commands
 from discord.ext import commands, ipc
 from discord.ext.ipc.server import Server
 from discord.ext.ipc.objects import ClientPayload
@@ -86,6 +87,11 @@ class Routes(commands.Cog):
 		if username is None:
 			username = data['id'].id
 		return username
+
+	@app_commands.command(description="View moderations in this server")
+	async def server_moderations(self,interaction: discord.Interaction):
+		config_data = utils.load_config()
+		await interaction.response.send_message(content=f"[Click me!]({config_data['dashboard']['url']}/dashboard/server/{interaction.guild.id}/moderations)")
 
 async def setup(bot):
 	await bot.add_cog(Routes(bot))
