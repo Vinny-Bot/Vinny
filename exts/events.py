@@ -164,5 +164,15 @@ class events(commands.Cog):
 						print(e)
 						conn.close()
 
+	@commands.Cog.listener()
+	async def on_guild_remove(self,guild: discord.Guild):
+		try:
+			conn, c = db.db_connect()
+			c.execute('DELETE FROM guilds WHERE guild_id = ?', (guild.id,))
+			conn.commit()
+			conn.close()
+		except Exception:
+			pass
+
 async def setup(bot):
 	await bot.add_cog(events(bot))
