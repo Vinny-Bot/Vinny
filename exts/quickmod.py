@@ -32,68 +32,73 @@ quick_mod = {}
 class quickmod(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
 		self.bot = bot
+		self.ctx_menu = app_commands.ContextMenu(
+			name='Quickmod',
+			callback=self.on_quick_mod,
+		)
+		self.bot.tree.add_command(self.ctx_menu)
 
-	@commands.Cog.listener()
-	async def on_reaction_add(self,reaction: discord.Reaction, moderator: discord.Member):
-		if reaction.emoji == "💥":
-			if moderator.guild_permissions.moderate_members:
-				if reaction.message.author.guild_permissions.moderate_members:
-					return
-				try:
-					global quick_mod
-					if moderator.id not in quick_mod:
-						quick_mod[moderator.id] = {}
-					if moderator.guild.id not in quick_mod[moderator.id]:
-						quick_mod[moderator.id][moderator.guild.id] = {}
-						embed = await embeds.quickmod_embed(moderator, reaction.message)
-						view = discord.ui.View(timeout=500)
+	async def on_quick_mod(self,interaction: discord.Interaction, message: discord.Message):
+		moderator = interaction.user
+		victim = message.author
+		if moderator.guild_permissions.moderate_members:
+			if victim.guild_permissions.moderate_members:
+				return await interaction.response.send_message(content="You cannot moderate other moderators")
+			try:
+				global quick_mod
+				if moderator.id not in quick_mod:
+					quick_mod[moderator.id] = {}
+				if moderator.guild.id not in quick_mod[moderator.id]:
+					quick_mod[moderator.id][moderator.guild.id] = {}
+					embed = await embeds.quickmod_embed(moderator, message)
+					view = discord.ui.View(timeout=500)
 						
-						sanction = discord.ui.Select(options=[discord.SelectOption(label="S1", value="S1", default=False),
-											discord.SelectOption(label="S2", value="S2", default=True),
-											discord.SelectOption(label="S3", value="S3", default=False),
-											discord.SelectOption(label="S4", value="S4", default=False)])
-						duration = discord.ui.Select(options=[discord.SelectOption(label="1m", value="1m", default=False),
-											discord.SelectOption(label="10m", value="10m", default=True),
-											discord.SelectOption(label="1h", value="1h", default=False),
-											discord.SelectOption(label="10h", value="10h", default=False),
-											discord.SelectOption(label="1d", value="1d", default=False),
-											discord.SelectOption(label="10d", value="10d", default=False)])
-						quick_mod[moderator.id][moderator.guild.id]['sanction'] = "S2"
-						quick_mod[moderator.id][moderator.guild.id]['duration'] = "10m"
-						async def sanction_callback(interaction: discord.Interaction):
-							if interaction.user.id != moderator.id:
-								await interaction.response.send_message("You are not the moderator", ephemeral=True)
-								return
-							quick_mod[moderator.id][moderator.guild.id]['sanction'] = sanction.values[0]
-							await interaction.response.defer()
-						async def duration_callback(interaction: discord.Interaction):
-							if interaction.user.id != moderator.id:
-								await interaction.response.send_message("You are not the moderator", ephemeral=True)
-								return
-							if duration.values[0] == "10d" and sanction.values[0] == "S2":
-								duration_new = "7d"
-							else:
-								duration_new = duration.values[0]
-							quick_mod[moderator.id][moderator.guild.id]['duration'] = duration_new
-							await interaction.response.defer()
-						quick_mod[moderator.id][moderator.guild.id]['message'] = reaction.message
-						sanction.callback = sanction_callback
-						duration.callback = duration_callback
-						view.add_item(sanction)
-						view.add_item(duration)
-						await reaction.message.reply(content=f"{moderator.mention}", embed=embed, view=view)
-				except Exception as e:
-					print(f"Quickmod error: {traceback.format_exc()}")
+					sanction = discord.ui.Select(options=[discord.SelectOption(label="S1", value="S1", default=False),
+										discord.SelectOption(label="S2", value="S2", default=True),
+										discord.SelectOption(label="S3", value="S3", default=False),
+										discord.SelectOption(label="S4", value="S4", default=False)])
+					duration = discord.ui.Select(options=[discord.SelectOption(label="1m", value="1m", default=False),
+										discord.SelectOption(label="15m", value="15m", default=True),
+										discord.SelectOption(label="1h", value="1h", default=False),
+										discord.SelectOption(label="10h", value="10h", default=False),
+										discord.SelectOption(label="1d", value="1d", default=False),
+										discord.SelectOption(label="10d", value="10d", default=False)])
+					quick_mod[moderator.id][moderator.guild.id]['sanction'] = "S2"
+					quick_mod[moderator.id][moderator.guild.id]['duration'] = "15m"
+					async def sanction_callback(interaction: discord.Interaction):
+						if interaction.user.id != moderator.id:
+							await interaction.response.send_message("You are not the moderator", ephemeral=True)
+							return
+						quick_mod[moderator.id][moderator.guild.id]['sanction'] = sanction.values[0]
+						await interaction.response.defer()
+					async def duration_callback(interaction: discord.Interaction):
+						if interaction.user.id != moderator.id:
+							await interaction.response.send_message("You are not the moderator", ephemeral=True)
+							return
+						if duration.values[0] == "10d" and sanction.values[0] == "S2":
+							duration_new = "7d"
+						else:
+							duration_new = duration.values[0]
+						quick_mod[moderator.id][moderator.guild.id]['duration'] = duration_new
+						await interaction.response.defer()
+					quick_mod[moderator.id][moderator.guild.id]['message'] = message
+					sanction.callback = sanction_callback
+					duration.callback = duration_callback
+					view.add_item(sanction)
+					view.add_item(duration)
+					await interaction.response.send_message(content=f"{moderator.mention}", embed=embed, view=view, ephemeral=True)
+			except Exception as e:
+				print(f"Quickmod error: {traceback.format_exc()}")
 		else:
-			return
+			return await interaction.response.send_message(content="You are not a moderator")
 
 	@commands.Cog.listener()
 	async def on_message(self,message: discord.Message):
 		if message.guild.id in quick_mod[message.author.id]:
+			await message.delete()
 			try:
 				if message.content == "cancel":
 					del quick_mod[message.author.id][message.guild.id]
-					await message.reply("Cancelled", mention_author=False)
 					return
 				else:
 					conn, c = db.db_connect()
@@ -110,7 +115,7 @@ class quickmod(commands.Cog):
 							await moderation.moderation.log_embed(self,victim=quick_mod_action['message'].author, severity=quick_mod_action['sanction'], duration=quick_mod_action['duration'], reason=f"[Quickmod] {message.content}\n\nOffending message:\n```\n{quick_mod_action['message'].content}\n```", moderator=message.author, moderation_id=moderation_id, moderation_type=moderation_type, guild=message.guild)
 						except Exception:
 							pass
-						await message.reply(f"Moderation `{moderation_id}`: Warned <@{quick_mod_action['message'].author.id}>: **{quick_mod_action['sanction']}. {message.content}**")
+						await message.channel.send(f"Moderation `{moderation_id}`: Warned <@{quick_mod_action['message'].author.id}>: **{quick_mod_action['sanction']}. [Quickmod] {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
 						conn.close()
 					elif quick_mod_action['sanction'] == "S2":
@@ -127,7 +132,7 @@ class quickmod(commands.Cog):
 							await moderation.moderation.log_embed(self,victim=quick_mod_action['message'].author, severity=quick_mod_action['sanction'], duration=quick_mod_action['duration'], reason=f"[Quickmod] {message.content}\n\nOffending message:\n```\n{quick_mod_action['message'].content}\n```", moderator=message.author, moderation_id=moderation_id, moderation_type=moderation_type, guild=message.guild)
 						except Exception:
 							pass
-						await message.reply(f"Moderation `{moderation_id}`: Muted <@{quick_mod_action['message'].author.id}> for **`{quick_mod_action['duration']}`**: **{quick_mod_action['sanction']}. {message.content}**")
+						await message.channel.send(f"Moderation `{moderation_id}`: Muted <@{quick_mod_action['message'].author.id}> for **`{quick_mod_action['duration']}`**: **{quick_mod_action['sanction']}. [Quickmod] {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
 						conn.close()
 					elif quick_mod_action['sanction'] == "S3" or quick_mod_action['sanction'] == "S4":
@@ -148,7 +153,7 @@ class quickmod(commands.Cog):
 							await moderation.moderation.log_embed(self,victim=quick_mod_action['message'].author, severity=quick_mod_action['sanction'], duration=duration, reason=f"[Quickmod] {message.content}\n\nOffending message:\n```\n{quick_mod_action['message'].content}\n```", moderator=message.author, moderation_id=moderation_id, moderation_type=moderation_type, guild=message.guild)
 						except Exception:
 							pass
-						await message.reply(f"Moderation `{moderation_id}`: Banned <@{quick_mod_action['message'].author.id}> for **`{display_duration}`**: **{quick_mod_action['sanction']}. {message.content}**")
+						await message.channel.send(f"Moderation `{moderation_id}`: Banned <@{quick_mod_action['message'].author.id}> for **`{display_duration}`**: **{quick_mod_action['sanction']}. [Quickmod] {message.content}**")
 						del quick_mod[message.author.id][message.guild.id]
 						conn.close()
 			except Exception as e:
