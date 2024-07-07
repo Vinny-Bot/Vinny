@@ -7,7 +7,7 @@ Self-hosted moderation bot
 - Moderation tracking
 - Tempban support
 - Event logs
-- Quickmod (react with 💥 to a message)
+- Quickmod (right click message -> Apps -> Quickmod)
 - Moderation marking (the ability to mark moderations as active or inactive)
 
 ### Setup
