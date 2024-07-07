@@ -169,7 +169,7 @@ def get_nonce_filter_status(guild_id: int, c: sqlite3.Cursor) -> int:
 		nonce_filter = c.fetchone()[0]
 		return nonce_filter
 	except Exception:
-		return 1
+		return 0
 
 def set_nonce_filter_status(guild_id: int, status: int, conn: sqlite3.Connection, c: sqlite3.Cursor):
 	c.execute('INSERT OR REPLACE INTO guilds (guild_id, log_channel_id, event_log_channel_id, nonce_filter) VALUES (?, ?, ?, ?)', (guild_id, get_log_channel(guild_id, c), get_event_log_channel(guild_id, c), status))
