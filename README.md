@@ -58,4 +58,4 @@ python3 dashboard/dashboard.py # IMPORTANT! You must execute the dashboard from 
 - Simple per-server log/event-log configuration (will be expanded upon soon)
 
 ### TODO:
-- N/A (for now)
+- Cog reloading system (for hotfixes)
