@@ -216,7 +216,7 @@ async def moderations(guild_id, page_number):
 			moderations.reverse()
 		for i in range(0, len(moderations), 12):
 			chunk = moderations[i:i+12]
-			total_pages = total_pages + 1
+			total_pages += 1
 			if page == page_number and not lock:
 				lock = True # so that it correctly paginates
 				hero_chunk = []
@@ -240,7 +240,7 @@ async def moderations(guild_id, page_number):
 			elif lock:
 				pass
 			else:
-				page = page + 1
+				page += 1
 	except Exception:
 		abort(500)
 	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
