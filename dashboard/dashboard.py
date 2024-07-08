@@ -31,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.2.3"
+dashboard_version = "1.2.4"
 
 app = Flask(__name__)
 
@@ -211,6 +211,8 @@ async def moderations(guild_id, page_number):
 	conn.close()
 	try:
 		order = request.args.get('order', default='newest', type=str)
+		show_inactive = request.args.get('show_inactive', default='false', type=str)
+		print(show_inactive)
 		if order == "newest":
 			moderations.reverse()
 		for i in range(0, len(moderations), 12):
@@ -232,7 +234,11 @@ async def moderations(guild_id, page_number):
 						mutable_moderation[9] = "Yes"
 					mutable_moderation.append(moderation[2])
 					mutable_moderation.append(moderation[3])
-					hero_chunk.append(tuple(mutable_moderation))
+					if mutable_moderation[9] == "Yes":
+						hero_chunk.append(tuple(mutable_moderation))
+					elif mutable_moderation[9] == "No" and show_inactive == "true":
+						print("Rah")
+						hero_chunk.append(tuple(mutable_moderation))
 			elif lock:
 				pass
 			else:
@@ -250,7 +256,7 @@ async def moderations(guild_id, page_number):
 	else:
 		abort(404)
 
-	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}", order=order)
+	return render_template("moderations.html", user=user, guild_name=guild_name, guild_id=guild_id, chunk=hero_chunk, page=page, total_pages=total_pages, page_number=page_number, title=f"Moderations - {guild_name}", description=f"View all moderations in {guild_name}", url=f"{config_data['dashboard']['url']}{url_for('moderations', guild_id=guild_id, page_number=1)}", order=order, show_inactive=show_inactive)
 
 if __name__ == '__main__':
 	app.run()

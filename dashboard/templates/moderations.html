@@ -24,7 +24,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 {% block content %}
 <div class="hero container">
 	<div class="panel is-danger">
-		<p class="panel-heading">Moderations in {{ guild_name }} <a class="button is-small is-danger is-vcentered" href="?order={{ 'newest' if order == 'oldest' else 'oldest' }}">Sorting by: {{ order }}</a></p>
+		<p class="panel-heading">Moderations in {{ guild_name }} <a class="button is-small is-danger is-vcentered" href="?order={{ 'newest' if order == 'oldest' else 'oldest' }}&show_inactive={{ show_inactive if show_inactive }}">Sorting by: {{ order }}</a> <a class="button is-small is-danger is-vcentered" href="?order={{ order if order }}&show_inactive={{ 'true' if show_inactive == 'false' else 'false' }}">Show inactive: {{ show_inactive }}</a></p>
 			<table class="table is-fullwidth is-striped is-hoverable">
 				<thead>
 					<th><abbr title="Moderation ID">ID</abbr></th>
@@ -34,7 +34,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<th>Reason</th>
 					<th><abbr title="Duration">Dur</abbr></th>
 					<th>Time</th>
-					<th>Active</th>
+					<th data-tooltip="Whether a moderation is active or not. Not to be confused with active mutes/bans">Active <i class="fas fa-info-circle"></i></th>
 				</thead>
 				<tbody>
 					{% for moderation in chunk %}
@@ -48,6 +48,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 						<th><span class="tag is-danger is-dark">Ban - {{ moderation[6] }}</span></th>
 						{% elif moderation[4] == "Ban" and moderation[6] == "S4" %}
 						<th><span class="tag is-danger" style="background-color: #C01D3C; color: #1A0006;">Ban - {{ moderation[6] }}</span></th>
+						{% elif moderation[4] == "Kick" %}
+						<th><span class="tag is-warning is-dark">Kick - N/A</span></th>
 						{% endif %}
 						<th><abbr title="{{ moderation[11] }}">{{ moderation[2] }}</abbr></th>
 						<th><abbr title="{{ moderation[12] }}">{{ moderation[3] }}</abbr></th>
