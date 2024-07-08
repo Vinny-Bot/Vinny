@@ -25,7 +25,6 @@ import discord.ext.commands.view
 import schedule
 import asyncio
 from utils import db, utils, embeds
-from cmds import moderation
 import datetime
 import time
 import traceback

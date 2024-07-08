@@ -20,6 +20,8 @@ import asyncio
 from discord.ext import commands
 from pathlib import Path
 from utils import utils
+from cogwatch import Watcher
+import datetime
 import sys
 
 base_dir = Path(__file__).resolve().parent
@@ -48,25 +50,19 @@ intents = discord.Intents.default()
 @bot.event
 async def on_ready():
 	print(f'logged in to {bot.user}')
-	try:
-		synced = await tree.sync()
-		print(f"synced {len(synced)} commands")
-	except Exception as e:
-		print(f"Error while initializing bot: {e}")
+	bot.start_time = datetime.datetime.now(datetime.UTC)
+	watcher = Watcher(bot, path='cogs', debug=False)
+	await watcher.start()
 
 async def loadcogs():
-	command_path = base_dir / 'cmds'
+	command_path = base_dir / 'cogs/cmds'
 	for files in os.listdir(command_path):
 		if files.endswith(".py"):
-			await bot.load_extension(f'cmds.{files[:-3]}')
-	extensions_path = base_dir / 'exts'
+			await bot.load_extension(f'cogs.cmds.{files[:-3]}')
+	extensions_path = base_dir / 'cogs/exts'
 	for files in os.listdir(extensions_path):
 		if files.endswith(".py"):
-			if files[:-3] != "ipc":
-				await bot.load_extension(f'exts.{files[:-3]}')
-			elif files[:-3] == "ipc" and "--enable-ipc" in sys.argv:
-				await bot.load_extension(f'exts.{files[:-3]}')
-				print("IPC extension enabled")
+			await bot.load_extension(f'cogs.exts.{files[:-3]}')
 
 async def init():
 	async with bot:

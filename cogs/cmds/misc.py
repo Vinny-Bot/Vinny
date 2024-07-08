@@ -20,13 +20,17 @@ from discord import app_commands
 from discord.ext import commands
 import utils.info as info
 import utils.db as db
-from datetime import datetime
+import datetime
+import humanfriendly
 
 class misc(commands.Cog):
+	def __init__(self, bot: commands.Bot) -> None:
+		self.bot = bot
+
 	@app_commands.command(description="Host information")
 	async def host_info(self,interaction: discord.Interaction):
 		try:
-			embed = discord.Embed(title="Host Information", color=16711680, timestamp=datetime.now())
+			embed = discord.Embed(title="Host Information", color=16711680, timestamp=datetime.datetime.now())
 			embed.add_field(name="Operating System", value=f"{platform.system()} {platform.release()}")
 			embed.add_field(name="", value="")
 			embed.add_field(name="Python Version", value=f"{platform.python_version()}")
@@ -58,6 +62,11 @@ class misc(commands.Cog):
 			channel = message_obj.channel
 			await interaction.response.send_message(f"Sent reply message in {channel.mention} to {message_obj.jump_url}", ephemeral=True)
 			await message_obj.reply(message)
+
+	@app_commands.command(description="View bot uptime")
+	async def uptime(self,interaction: discord.Interaction):
+		timedelta = datetime.datetime.now(datetime.UTC) - self.bot.start_time
+		await interaction.response.send_message(content=f"{humanfriendly.format_timespan(timedelta)}")
 
 async def setup(client):
 	await client.add_cog(misc(client))
