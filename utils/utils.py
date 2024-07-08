@@ -54,6 +54,7 @@ def permission_check(moderator: discord.Member, victim: discord.Member, moderati
 	required_permission = {
 		"Warn": "moderate_members",
 		"Mute": "moderate_members",
+		"Kick": "kick_members",
 		"Ban": "ban_members"
 	}.get(moderation_type)
 

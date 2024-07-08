@@ -61,6 +61,8 @@ async def dm_moderation_embed(guild: discord.Guild, victim: discord.User | disco
 			verb="muted in"
 		elif moderation_type == "Warn":
 			verb="warned in"
+		elif moderation_type == "Kick":
+			verb="kicked from"
 		embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16761035, timestamp=datetime.datetime.now())
 		embed.add_field(name="Reason", value=f"```\n{reason}\n```")
 		embed.add_field(name="Severity", value=f"{severity}", inline=False)

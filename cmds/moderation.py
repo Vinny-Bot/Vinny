@@ -36,7 +36,7 @@ class moderation(commands.Cog):
 		embed.add_field(name="Moderator", value=f"<@{moderator.id}>")
 		embed.add_field(name="Severity", value=f"{severity}")
 		embed.add_field(name="Reason", value=f"{reason}")
-		if severity == "S2" or severity == "S3":
+		if moderation_type == "Mute" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
 		embed.set_thumbnail(url=victim.avatar)
 		conn, c = db.db_connect()
@@ -62,7 +62,7 @@ class moderation(commands.Cog):
 				try:
 					duration_delta = utils.parse_duration(duration)
 				except Exception:
-					await interaction.response.send_message("Please input valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+					await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
 					return
 				conn, c = db.db_connect()
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
@@ -82,27 +82,29 @@ class moderation(commands.Cog):
 
 	@app_commands.command(description="Ban a member")
 	@app_commands.describe(victim="Member to sanction")
-	@app_commands.describe(severity="Type of sanction")
+	@app_commands.describe(severity="Type of sanction (S3 = Tempban, S4 = Permban)")
 	@app_commands.describe(duration="Time of ban (eg: 1s for 1 second, 1m for 1 minute, 1h for 1 hour, 1d for 1 day.)")
 	@app_commands.describe(reason="Reason of ban")
 	@app_commands.describe(purge="Purge all messages within 7 days")
 	@app_commands.rename(victim='member')
-	async def ban(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S3', 'S4'], duration: str, reason: str, purge: Literal['No', 'Yes']):
+	async def ban(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S3', 'S4'], reason: str, purge: Literal['No', 'Yes'], duration: str = None):
 		success, message = utils.permission_check(interaction.user, victim, "Ban")
 		if success:
 			try:
 				guild_id = interaction.guild.id
 				user_id = victim.id
 				moderator_id = interaction.user.id
-				conn, c = db.db_connect()
 				if severity == 'S4':
 					duration = 'N/A'
 				else:
-					try:
-						newdur = utils.parse_duration(duration)
-					except Exception:
-						await interaction.response.send_message("Please input valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
-						return
+					if duration is not None:
+						try:
+							newdur = utils.parse_duration(duration)
+						except Exception:
+							return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+					else:
+						return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+				conn, c = db.db_connect()
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
 				conn.close()
 				if purge == "No":
@@ -144,6 +146,33 @@ class moderation(commands.Cog):
 				except Exception:
 					pass
 				await moderation.log_embed(self,victim=victim, severity=severity, duration=None, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Warn", guild=interaction.guild)
+			except Exception as e:
+				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+		else:
+			await interaction.response.send_message(message, ephemeral=True)
+
+	@app_commands.command(description="Kick a member")
+	@app_commands.describe(victim="Member to sanction")
+	@app_commands.describe(reason="Reason of kick")
+	@app_commands.rename(victim='member')
+	async def kick(self,interaction: discord.Interaction, victim: discord.Member, reason: str):
+		success, message = utils.permission_check(interaction.user, victim, "Kick")
+		if success:
+			try:
+				guild_id = interaction.guild.id
+				user_id = victim.id
+				moderator_id = interaction.user.id
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Kick", reason=reason, severity="N/A", duration=None, time=str(time.time()), conn=conn, c=c)
+				conn.close()
+				await interaction.response.send_message(f"Moderation `{moderation_id}`: Kicked <@{user_id}>: **{reason}**")
+				try:
+					channel = await victim.create_dm()
+					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=None, severity="N/A", moderation_type="Kick"))
+				except Exception:
+					pass
+				await victim.kick()
+				await moderation.log_embed(self,victim=victim, severity="N/A", duration=None, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Kick", guild=interaction.guild)
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
