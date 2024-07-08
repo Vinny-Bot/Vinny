@@ -27,6 +27,7 @@ from cogs.cmds import moderation
 import datetime
 import time
 import traceback
+import importlib
 quick_mod = {}
 
 class quickmod(commands.Cog):
@@ -164,4 +165,8 @@ class quickmod(commands.Cog):
 
 async def setup(bot):
 	quick_mod = {}
+	importlib.reload(utils)
+	importlib.reload(db)
+	importlib.reload(embeds)
+	importlib.reload(moderation)
 	await bot.add_cog(quickmod(bot))

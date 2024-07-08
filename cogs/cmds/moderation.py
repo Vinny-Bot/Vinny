@@ -25,6 +25,7 @@ from typing import Literal
 from utils import utils
 from utils import embeds
 import Paginator
+import importlib
 
 class moderation(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
@@ -291,4 +292,7 @@ class moderation(commands.Cog):
 		conn.close()
 
 async def setup(bot):
+	importlib.reload(db)
+	importlib.reload(utils)
+	importlib.reload(embeds)
 	await bot.add_cog(moderation(bot))

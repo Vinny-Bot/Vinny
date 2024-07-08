@@ -25,6 +25,7 @@ from discord.ext import commands, ipc
 from discord.ext.ipc.server import Server
 from discord.ext.ipc.objects import ClientPayload
 from utils import utils
+import importlib
 
 class Routes(commands.Cog):
 	def __init__(self, bot: commands.Bot):
@@ -94,4 +95,5 @@ class Routes(commands.Cog):
 		await interaction.response.send_message(content=f"[Click me!]({config_data['dashboard']['url']}/dashboard/server/{interaction.guild.id}/moderations)")
 
 async def setup(bot):
+	importlib.reload(utils)
 	await bot.add_cog(Routes(bot))

@@ -28,6 +28,7 @@ from utils import db, utils, embeds
 import datetime
 import time
 import traceback
+import importlib
 message_delete_embeds = {} # this is so we can send one message with all the embeds
 
 class events(commands.Cog):
@@ -174,4 +175,7 @@ class events(commands.Cog):
 			pass
 
 async def setup(bot):
+	importlib.reload(utils)
+	importlib.reload(db)
+	importlib.reload(embeds)
 	await bot.add_cog(events(bot))

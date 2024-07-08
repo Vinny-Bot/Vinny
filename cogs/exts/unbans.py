@@ -26,6 +26,7 @@ import discord.ext.commands.view
 import schedule
 import asyncio
 from utils import db, utils, embeds
+import importlib
 
 class unbans(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
@@ -79,4 +80,7 @@ class unbans(commands.Cog):
 			schedule.run_pending()
 
 async def setup(bot):
+	importlib.reload(db)
+	importlib.reload(utils)
+	importlib.reload(embeds)
 	await bot.add_cog(unbans(bot))

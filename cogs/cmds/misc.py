@@ -22,6 +22,7 @@ import utils.info as info
 import utils.db as db
 import datetime
 import humanfriendly
+import importlib
 
 class misc(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
@@ -69,4 +70,6 @@ class misc(commands.Cog):
 		await interaction.response.send_message(content=f"{humanfriendly.format_timespan(timedelta)}")
 
 async def setup(client):
+	importlib.reload(db)
+	importlib.reload(info)
 	await client.add_cog(misc(client))

@@ -20,6 +20,7 @@ from discord.ext import commands
 from discord.ext.commands import Bot
 from typing import Literal
 import utils.db as db
+import importlib
 
 class config(commands.Cog):
 	def __init__(self, bot: Bot) -> None:
@@ -64,4 +65,5 @@ class config(commands.Cog):
 			await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 
 async def setup(bot):
+	importlib.reload(db)
 	await bot.add_cog(config(bot))
