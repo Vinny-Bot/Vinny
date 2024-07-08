@@ -18,6 +18,7 @@ import re
 import datetime
 import discord
 import sys
+from typing import Union
 
 if sys.version_info >= (3, 11): # compat with older python (you'll need to install tomli from pip though)
 	import tomllib
@@ -44,7 +45,7 @@ def parse_duration(duration_str): # convert 1m, 1h, 1d, etc to seconds and then 
 	else:
 		raise ValueError(f"Invalid duration format: {duration_str}")
 
-def permission_check(moderator: discord.Member, victim: discord.Member, moderation_type: str):
+def permission_check(moderator: discord.Member, victim: discord.Member | discord.User, moderation_type: str):
 	if victim.bot:
 		return False, "Cannot moderate another bot."
 
@@ -68,6 +69,9 @@ def permission_check(moderator: discord.Member, victim: discord.Member, moderati
 	if victim.id == 336057880287641603 and moderation_type == "Warn":
 		return True, "lunar tax"
 	# ignore the 2 lines above
+
+	if isinstance(victim, discord.User):
+		return True, "Victim is a discord.User object"
 
 	if getattr(moderator.guild_permissions, required_permission) and getattr(victim.guild_permissions, required_permission):
 		return False, "Cannot moderate other moderators."

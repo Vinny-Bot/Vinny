@@ -63,9 +63,14 @@ async def dm_moderation_embed(guild: discord.Guild, victim: discord.User | disco
 			verb="warned in"
 		elif moderation_type == "Kick":
 			verb="kicked from"
+		elif moderation_type == "Unmute":
+			verb="unmuted from"
+		elif moderation_type == "Unmute":
+			verb="unbanned from"
 		embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16761035, timestamp=datetime.datetime.now())
 		embed.add_field(name="Reason", value=f"```\n{reason}\n```")
-		embed.add_field(name="Severity", value=f"{severity}", inline=False)
+		if moderation_type != "Kick" or moderation_type != "Unmute":
+			embed.add_field(name="Severity", value=f"{severity}", inline=False)
 		if severity == "S2" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
 		if guild.icon is not None:

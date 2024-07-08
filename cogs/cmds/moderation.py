@@ -35,7 +35,8 @@ class moderation(commands.Cog):
 		embed = discord.Embed(title=f"Moderation `{moderation_id}` - {moderation_type}", color=16711680, timestamp=datetime.datetime.now())
 		embed.add_field(name="Moderated member", value=f"<@{victim.id}>")
 		embed.add_field(name="Moderator", value=f"<@{moderator.id}>")
-		embed.add_field(name="Severity", value=f"{severity}")
+		if moderation_type != "Kick" and moderation_type != "Unmute":
+			embed.add_field(name="Severity", value=f"{severity}")
 		embed.add_field(name="Reason", value=f"{reason}")
 		if moderation_type == "Mute" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
@@ -174,6 +175,64 @@ class moderation(commands.Cog):
 					pass
 				await victim.kick()
 				await moderation.log_embed(self,victim=victim, severity="N/A", duration=None, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Kick", guild=interaction.guild)
+			except Exception as e:
+				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+		else:
+			await interaction.response.send_message(message, ephemeral=True)
+
+	@app_commands.command(description="Unmute a member")
+	@app_commands.describe(victim="Member to unmute")
+	@app_commands.describe(reason="Reason of unmute")
+	@app_commands.rename(victim='member')
+	async def unmute(self,interaction: discord.Interaction, victim: discord.Member, reason: str = "Unmuted"):
+		success, message = utils.permission_check(interaction.user, victim, "Mute")
+		if success:
+			try:
+				guild_id = interaction.guild.id
+				user_id = victim.id
+				moderator_id = interaction.user.id
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Unmute", reason=reason, severity="N/A", duration=None, time=str(time.time()), conn=conn, c=c)
+				conn.close()
+				await interaction.response.send_message(f"Moderation `{moderation_id}`: Unmuted <@{user_id}>: **{reason}**")
+				try:
+					channel = await victim.create_dm()
+					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=None, severity="N/A", moderation_type="Unmute"))
+				except Exception:
+					pass
+				await victim.timeout(utils.parse_duration("0s"), reason=f"{reason} - Unmuted by {interaction.user.name}")
+				await moderation.log_embed(self,victim=victim, severity="N/A", duration=None, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Unmute", guild=interaction.guild)
+			except Exception as e:
+				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+		else:
+			await interaction.response.send_message(message, ephemeral=True)
+
+	@app_commands.command(description="Unban a member")
+	@app_commands.describe(victim="Member to unban (Provide ID if you can't pick the user)")
+	@app_commands.describe(reason="Reason of unban")
+	@app_commands.rename(victim='user') # renamed from member to user for accuracy 🔥
+	async def unban(self,interaction: discord.Interaction, victim: discord.User, reason: str = "Unbanned"):
+		success, message = utils.permission_check(interaction.user, victim, "Ban")
+		if success:
+			try:
+				guild_id = interaction.guild.id
+				user_id = victim.id
+				moderator_id = interaction.user.id
+				try:
+					await interaction.guild.fetch_ban(victim)
+				except Exception:
+					return await interaction.response.send_message(f"This user isn't banned", ephemeral=True)
+				conn, c = db.db_connect()
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Unban", reason=reason, severity="N/A", duration=None, time=str(time.time()), conn=conn, c=c)
+				conn.close()
+				await interaction.response.send_message(f"Moderation `{moderation_id}`: Unbanned <@{user_id}>: **{reason}**")
+				await interaction.guild.unban(user=victim, reason=f"{reason} - Unbanned by {interaction.user.name}")
+				try:
+					channel = await victim.create_dm()
+					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=None, severity="N/A", moderation_type="Unban"))
+				except Exception:
+					pass
+				await moderation.log_embed(self,victim=victim, severity="N/A", duration=None, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Unban", guild=interaction.guild)
 			except Exception as e:
 				await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
 		else:
