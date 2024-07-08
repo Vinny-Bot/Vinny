@@ -10,6 +10,17 @@ Self-hosted moderation bot
 - Quickmod (right click message -> Apps -> Quickmod)
 - Moderation marking (the ability to mark moderations as active or inactive)
 
+### Dependencies
+- **Atleast Python 3.10**
+- discord.py
+- discord.py-pagination
+- Flask (flask[async])
+- Flask-Discord
+- better-ipc
+- humanfriendly
+- cogwatch
+- schedule
+
 ### Setup
 Begin by cloning the repository
 ```
@@ -46,9 +57,8 @@ secret = "Vinny - simple moderation bot" # IMPORTANT! This is used to encrypt co
 (token and secrets for demonstration purposes, they aren't real)
 
 # Dashboard setup
-We have a fairly modern dashboard premade out of the box, which you can launch by using the following commands:
+We have a fairly modern dashboard premade out of the box, which you can launch by using the following command:
 ```bash
-python3 ./main.py --enable-ipc & # IMPORTANT! The IPC extension must be enabled for dashboard functions.
 python3 dashboard/dashboard.py # IMPORTANT! You must execute the dashboard from project root! Preferably use a WSGI server to run the dashboard.
 ```
 
@@ -58,4 +68,4 @@ python3 dashboard/dashboard.py # IMPORTANT! You must execute the dashboard from 
 - Simple per-server log/event-log configuration (will be expanded upon soon)
 
 ### TODO:
-- Cog reloading system (for hotfixes)
+- None (for now)
