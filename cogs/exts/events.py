@@ -38,7 +38,7 @@ class events(commands.Cog):
 	async def send_pending_delete_events(self):
 		for guild_id, embeds in message_delete_embeds.items():
 			conn, c = db.db_connect()
-			channel_id = db.get_event_log_channel(guild_id, c)
+			channel_id = db.get_config_value(guild_id, "event_log_channel_id", c, 0)
 			conn.close()
 			try:
 				channel = await self.bot.fetch_channel(channel_id)
@@ -62,36 +62,50 @@ class events(commands.Cog):
 	async def start_schedule(self):
 		schedule.every(10).seconds.do(lambda: asyncio.create_task(events.send_pending_delete_events(self)))
 
-	@commands.Cog.listener()
-	async def on_ready(self):
-		await events.start_schedule(self)
-		await events.scheduler(self)
+	async def cog_load(self):
+		asyncio.create_task(self.start_schedule())
+		asyncio.create_task(self.scheduler())
+
+	def cog_unload(self):
+		if self.scheduler_task:
+			self.scheduler_task.cancel()
+		if self.start_schedule_task:
+			self.start_schedule_task.cancel()
 
 	@commands.Cog.listener()
 	async def on_raw_message_delete(self,payload: discord.RawMessageDeleteEvent):
+		conn, c = db.db_connect()
+		if db.get_config_value(payload.guild_id, "on_message_delete", c) == 0: return conn.close()
 		global message_delete_embeds
+		if payload.cached_message:
+			if db.get_config_value(payload.guild_id, "on_message_delete", c, 1) and payload.cached_message.author.bot:
+				return
 		if payload.guild_id not in message_delete_embeds:
 			message_delete_embeds[payload.guild_id] = []
-			
+
 		embed = await embeds.delete_message_embed(payload, payload.cached_message)
 		message_delete_embeds[payload.guild_id].append(embed)
+		conn.close()
 
 	@commands.Cog.listener()
 	async def on_message_edit(self,before: discord.Message, after: discord.Message):
-		if before.content == after.content:
-			return
 		conn, c = db.db_connect()
-		channel_id = db.get_event_log_channel(before.guild.id, c)
+		if before.author.bot and db.get_config_value(before.guild.id, "bot_filter", c) == 0 or not before.author.bot:
+			if db.get_config_value(before.guild.id, "on_message_edit", c) == 0: return conn.close()
+			if before.content == after.content:
+				return conn.close()
+			channel_id = db.get_config_value(before.guild.id, "event_log_channel_id", c, 0)
+			channel = await self.bot.fetch_channel(channel_id)
+			embed = await embeds.edit_message_embed(before, after)
+			await channel.send(embed=embed)
 		conn.close()
-		channel = await self.bot.fetch_channel(channel_id)
-		embed = await embeds.edit_message_embed(before, after)
-		await channel.send(embed=embed)
 
 	@commands.Cog.listener()
 	async def on_raw_message_edit(self,payload: discord.RawMessageUpdateEvent):
 		if payload.cached_message is None:
 			conn, c = db.db_connect()
-			channel_id = db.get_event_log_channel(payload.guild_id, c)
+			if db.get_config_value(payload.guild_id, "on_message_edit", c) == 0: return conn.close()
+			channel_id = db.get_config_value(payload.guild_id, "event_log_channel_id", c, 0)
 			conn.close()
 			channel = await self.bot.fetch_channel(channel_id)
 			event_channel = await self.bot.fetch_channel(payload.channel_id)
@@ -102,7 +116,8 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_member_update(self,before: discord.Member, after: discord.Member):
 		conn, c = db.db_connect()
-		channel_id = db.get_event_log_channel(before.guild.id, c)
+		if db.get_config_value(before.guild.id, "on_member_update", c) == 0: return conn.close()
+		channel_id = db.get_config_value(before.guild.id, "event_log_channel_id", c, 0)
 		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.member_update_embed(before, after)
@@ -111,7 +126,8 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_guild_channel_create(self,event_channel):
 		conn, c = db.db_connect()
-		channel_id = db.get_event_log_channel(event_channel.guild.id, c)
+		if db.get_config_value(event_channel.guild.id, "on_guild_channel_create", c) == 0: return conn.close()
+		channel_id = db.get_config_value(event_channel.guild.id, "event_log_channel_id", c, 0)
 		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.channel_created(event_channel)
@@ -120,7 +136,8 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_guild_channel_delete(self,event_channel):
 		conn, c = db.db_connect()
-		channel_id = db.get_event_log_channel(event_channel.guild.id, c)
+		if db.get_config_value(event_channel.guild.id, "on_guild_channel_delete", c) == 0: return conn.close()
+		channel_id = db.get_config_value(event_channel.guild.id, "event_log_channel_id", c, 0)
 		conn.close()
 		channel = await self.bot.fetch_channel(channel_id)
 		embed = await embeds.channel_deleted(event_channel)
@@ -129,7 +146,8 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_member_join(self,member: discord.Member):
 		conn, c = db.db_connect()
-		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id, c))
+		if db.get_config_value(member.guild.id, "on_member_join", c) == 0: return conn.close()
+		channel = await self.bot.fetch_channel(db.get_config_value(member.guild.id, "event_log_channel_id", c, 0))
 		conn.close()
 		embed = await embeds.member_join(member)
 		await channel.send(embed=embed)
@@ -137,7 +155,8 @@ class events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_member_remove(self,member: discord.Member):
 		conn, c = db.db_connect()
-		channel = await self.bot.fetch_channel(db.get_event_log_channel(member.guild.id, c))
+		if db.get_config_value(member.guild.id, "on_member_leave", c) == 0: return conn.close()
+		channel = await self.bot.fetch_channel(db.get_config_value(member.guild.id, "event_log_channel_id", c, 0))
 		conn.close()
 		embed = await embeds.member_remove(member)
 		await channel.send(embed=embed)
@@ -146,10 +165,10 @@ class events(commands.Cog):
 	async def on_message(self,message: discord.Message):
 			if isinstance(message.nonce, str) and not message.nonce.isdigit():
 				conn, c = db.db_connect()
-				nonce_filtering = db.get_nonce_filter_status(message.guild.id, c)
+				nonce_filtering = db.get_config_value(message.guild.id, "nonce_filter", c)
 				if nonce_filtering == 1:
 					try:
-						channel = await self.bot.fetch_channel(db.get_log_channel(message.guild.id, c))
+						channel = await self.bot.fetch_channel(db.get_config_value(message.guild.id, "event_log_channel_id", c, 0))
 						await message.delete()
 						embed = discord.Embed(title="Hidden nonce message detected", color=16729932, timestamp=datetime.datetime.now())
 						embed.add_field(name="Author", value=f"<@{message.author.id}>\n{message.author.id}")
