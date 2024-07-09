@@ -40,11 +40,22 @@ class unbans(commands.Cog):
 	async def start_schedule(self):
 		schedule.every().minute.do(lambda: asyncio.create_task(unbans.look_for_unbans(self)))
 
-	@commands.Cog.listener()
-	async def on_ready(self):
+	async def scheduler(self):
+		while True:
+			await asyncio.sleep(1)
+			schedule.run_pending()
+
+	async def cog_load(self):
 		print("starting unban scheduler")
-		await unbans.start_schedule(self)
-		await unbans.scheduler(self)
+		asyncio.create_task(self.start_schedule())
+		asyncio.create_task(self.scheduler())
+
+	async def cog_unload(self):
+		if self.scheduler_task:
+			self.scheduler_task.cancel()
+		if self.start_schedule_task:
+			self.start_schedule_task.cancel()
+
 
 	async def look_for_unbans(self): # check every active tempban for an unban
 		conn, c = db.db_connect()
@@ -74,10 +85,6 @@ class unbans(commands.Cog):
 		except Exception as e:
 			print(f"Error while unbanning: {e}")
 		conn.close()
-	async def scheduler():
-		while True:
-			await asyncio.sleep(1)
-			schedule.run_pending()
 
 async def setup(bot):
 	importlib.reload(db)
