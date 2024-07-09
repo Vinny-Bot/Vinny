@@ -42,7 +42,7 @@ class moderation(commands.Cog):
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
 		embed.set_thumbnail(url=victim.avatar)
 		conn, c = db.db_connect()
-		log_channel_id = db.get_log_channel(guild.id, c)
+		log_channel_id = db.get_config_value(guild.id, "log_channel_id", c, 0)
 		conn.close()
 		log_channel = await self.bot.fetch_channel(log_channel_id)
 		await log_channel.send(embed=embed)
@@ -334,7 +334,7 @@ class moderation(commands.Cog):
 				conn.commit()
 				await interaction.response.send_message(f"Updated moderation `{moderation_id}`: Reason changed from `{old_reason}` to `{new_reason}`. The user was {notified}")
 				embed = await embeds.moderation_change_reason(interaction.user, moderation_id, moderation[4], new_reason, old_reason)
-				log_channel_id = db.get_log_channel(interaction.guild.id, c)
+				log_channel_id = db.get_config_value(interaction.guild.id, "log_channel_id", c, 0)
 				log_channel = await self.bot.fetch_channel(log_channel_id)
 				await log_channel.send(embed=embed)
 				if notify:
