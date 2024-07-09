@@ -31,23 +31,23 @@ class misc(commands.Cog):
 	@app_commands.command(description="Host information")
 	async def host_info(self,interaction: discord.Interaction):
 		try:
-			embed = discord.Embed(title="Host Information", color=16711680, timestamp=datetime.datetime.now())
-			embed.add_field(name="Operating System", value=f"{platform.system()} {platform.release()}")
+			embed = discord.Embed(title="Howsst Infowmmatiwon", color=16711680, timestamp=datetime.datetime.now())
+			embed.add_field(name="Owwerawing Syswwem", value=f"{platform.system()} {platform.release()}")
 			embed.add_field(name="", value="")
-			embed.add_field(name="Python Version", value=f"{platform.python_version()}")
-			embed.add_field(name="Vinny Version", value=f"{info.get_vinny_version()}")
+			embed.add_field(name="Pywwon Wewwion", value=f"{platform.python_version()}")
+			embed.add_field(name="Vinny Wewwion", value=f"{info.get_vinny_version()}")
 			embed.add_field(name="", value="")
 			conn, c = db.db_connect()
 			embed.add_field(name="Total moderations", value=f"{db.get_count_of_moderations(c)}")
 			conn.close()
 			await interaction.response.send_message(embed=embed)
 		except Exception as e:
-			await interaction.response.send_message(f"Unhandled exception caught:\n```\n{e}\n```", ephemeral=True)
+			await interaction.response.send_message(f"Unhanwwled excewwion cahwt:\n```\n{e}\n```", ephemeral=True)
 
-	@app_commands.command(description="Say anything in your current channel")
-	@app_commands.describe(message="Message to send")
-	@app_commands.describe(channel="Channel to send message in")
-	@app_commands.describe(reply_to="Message to reply to (give ID)")
+	@app_commands.command(description="Say anywing in your cuwwent chawwel OwO nyaa~")
+	@app_commands.describe(message="Mewsage to wend :3")
+	@app_commands.describe(channel="Channel to wend mewsage in UwU")
+	@app_commands.describe(reply_to="Mewsage to weply to (give ID :3)")
 	@app_commands.checks.has_permissions(moderate_members=True)
 	async def say(self,interaction: discord.Interaction, message: str, channel: discord.TextChannel = None, reply_to: str = None):
 		if channel is not None:
@@ -56,13 +56,13 @@ class misc(commands.Cog):
 			channel = interaction.channel
 		
 		if reply_to is None:
-			await interaction.response.send_message(f"Sent message in {channel.mention}", ephemeral=True)
+			await interaction.response.send_message(f"Sewnt mewsage in {channel.mention}", ephemeral=True)
 			await channel.send(message)
 		else:
 			message_obj = await channel.fetch_message(int(reply_to))
 			channel = message_obj.channel
-			await interaction.response.send_message(f"Sent reply message in {channel.mention} to {message_obj.jump_url}", ephemeral=True)
-			await message_obj.reply(message)
+			await interaction.response.send_message(f"Sent weply mewsage in {channel.mention} to {message_obj.jump_url}", ephemeral=True)
+			await message_obj.reply(message + " :3")
 
 	@app_commands.command(description="View bot uptime")
 	async def uptime(self,interaction: discord.Interaction):
