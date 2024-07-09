@@ -57,19 +57,24 @@ async def dm_moderation_embed(guild: discord.Guild, victim: discord.User | disco
 	try:
 		if moderation_type == "Ban":
 			verb="banned from"
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16711680, timestamp=datetime.datetime.now())
 		elif moderation_type == "Mute":
 			verb="muted in"
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16744319, timestamp=datetime.datetime.now())
 		elif moderation_type == "Warn":
 			verb="warned in"
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16572774, timestamp=datetime.datetime.now())
 		elif moderation_type == "Kick":
 			verb="kicked from"
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16755969, timestamp=datetime.datetime.now())
 		elif moderation_type == "Unmute":
 			verb="unmuted from"
-		elif moderation_type == "Unmute":
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=7855479, timestamp=datetime.datetime.now())
+		elif moderation_type == "Unban":
 			verb="unbanned from"
-		embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=16761035, timestamp=datetime.datetime.now())
+			embed = discord.Embed(title=f"You have been {verb} {guild.name}", color=7855479, timestamp=datetime.datetime.now())
 		embed.add_field(name="Reason", value=f"```\n{reason}\n```")
-		if moderation_type != "Kick" or moderation_type != "Unmute":
+		if severity != "N/A":
 			embed.add_field(name="Severity", value=f"{severity}", inline=False)
 		if severity == "S2" or severity == "S3":
 			embed.add_field(name="Duration", value=f"{duration} (<t:{int((datetime.datetime.now() + utils.parse_duration(duration)).timestamp())}:R>)")
