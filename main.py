@@ -34,7 +34,7 @@ class bot(commands.Bot):
 		super().__init__(
 			intents=intents,
 			max_messages=5000,
-			command_prefix=None,
+			command_prefix="Vinny",
 			allowed_mentions=allowed_mentions,
 			activity=discord.Activity(type=discord.ActivityType.listening, name="your every move")
 		)
