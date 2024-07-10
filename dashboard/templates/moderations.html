@@ -67,12 +67,12 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 				<div class="container has-text-centered">
 					<nav class="pagination is-centered" role="navigation" aria-label="pagination">
 						{% if page > 1 %}
-							<a class="pagination-previous" href="{{ url_for('moderations', guild_id=guild_id, page_number=page-1) }}">Previous</a>
+							<a class="pagination-previous" href="{{ url_for('moderations', guild_id=guild_id, page_number=page-1) }}?order={{ order }}&show_inactive={{ show_inactive }}">Previous</a>
 						{% else %}
 							<a class="pagination-previous is-disabled">Previous</a>
 						{% endif %}
 						{% if page < total_pages %}
-							<a class="pagination-next" href="{{ url_for('moderations', guild_id=guild_id, page_number=page+1) }}">Next</a>
+							<a class="pagination-next" href="{{ url_for('moderations', guild_id=guild_id, page_number=page+1) }}?order={{ order }}&show_inactive={{ show_inactive }}">Next</a>
 						{% else %}
 							<a class="pagination-next is-disabled">Next</a>
 						{% endif %}
