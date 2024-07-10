@@ -190,6 +190,8 @@ def get_config_value(guild_id: int, key: str, c: sqlite3.Cursor, default: int = 
 	try:
 		c.execute(f'SELECT {key} FROM guilds WHERE guild_id=?', (guild_id,))
 		value = c.fetchone()[0]
+		if value is None:
+			return default
 		return value
 	except Exception:
 		return default
