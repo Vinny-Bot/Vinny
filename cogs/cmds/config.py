@@ -35,7 +35,8 @@ class config(commands.Cog):
 				if channel.guild.id == interaction.guild.id:
 					try:
 						conn, c = db.db_connect()
-						db.set_log_channel(interaction.guild.id, channel.id, conn, c)
+						c.execute("INSERT OR IGNORE INTO guilds (guild_id) VALUES (?)", (interaction.guild.id,))
+						db.set_config_value(interaction.guild.id, "log_channel_id", channel.id, conn, c)
 						conn.close()
 						await interaction.response.send_message(f"Set log channel to <#{channel.id}>")
 					except Exception as e:
@@ -54,7 +55,8 @@ class config(commands.Cog):
 				if channel.guild.id == interaction.guild.id:
 					try:
 						conn, c = db.db_connect()
-						db.set_event_log_channel(interaction.guild.id, channel.id, conn, c)
+						c.execute("INSERT OR IGNORE INTO guilds (guild_id) VALUES (?)", (interaction.guild.id,))
+						db.set_config_value(interaction.guild.id, "event_log_channel_id", channel.id, conn, c)
 						conn.close()
 						await interaction.response.send_message(f"Set event log channel to <#{channel.id}>")
 					except Exception as e:
