@@ -83,15 +83,15 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 							{% set right_ellipsis = right_boundary < total_pages %}
 							{% for p in range(1, total_pages + 1) %}
 								{% if p == page %}
-									<li><a class="pagination-link is-current" style="background-color: #FF5C7B; border-color: #E65974; color: #1A0006" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}">{{ p }}</a></li>
+									<li><a class="pagination-link is-current" style="background-color: #FF5C7B; border-color: #E65974; color: #1A0006" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}?order={{ order }}&show_inactive={{ show_inactive }}">{{ p }}</a></li>
 								{% elif p >= left_boundary and p <= right_boundary %}
-									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}">{{ p }}</a></li>
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=p) }}?order={{ order }}&show_inactive={{ show_inactive }}">{{ p }}</a></li>
 								{% elif left_ellipsis and p == left_boundary - 1 %}
-									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=1) }}">{{ 1 }}</a></li>
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=1) }}?order={{ order }}&show_inactive={{ show_inactive }}">{{ 1 }}</a></li>
 									<li><span class="pagination-ellipsis">...</span></li>
 								{% elif right_ellipsis and p == right_boundary + 1 %}
 									<li><span class="pagination-ellipsis">...</span></li>
-									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=total_pages) }}">{{ total_pages }}</a></li>
+									<li><a class="pagination-link" href="{{ url_for('moderations', guild_id=guild_id, page_number=total_pages) }}?order={{ order }}&show_inactive={{ show_inactive }}">{{ total_pages }}</a></li>
 								{% endif %}
 							{% endfor %}
 						</ul>

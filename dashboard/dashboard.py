@@ -244,6 +244,9 @@ async def moderations(guild_id, page_number):
 	try:
 		order = request.args.get('order', default='newest', type=str)
 		show_inactive = request.args.get('show_inactive', default='false', type=str)
+		for moderation in moderations:
+			if show_inactive == "false" and moderation[9] == 0:
+				moderations.remove(moderation)
 		if order == "newest":
 			moderations.reverse()
 		for i in range(0, len(moderations), 12):
@@ -273,10 +276,7 @@ async def moderations(guild_id, page_number):
 						mutable_moderation[9] = "Yes"
 					mutable_moderation.append(moderation[2])
 					mutable_moderation.append(moderation[3])
-					if mutable_moderation[9] == "Yes":
-						hero_chunk.append(tuple(mutable_moderation))
-					elif mutable_moderation[9] == "No" and show_inactive == "true":
-						hero_chunk.append(tuple(mutable_moderation))
+					hero_chunk.append(tuple(mutable_moderation))
 			elif lock:
 				pass
 			else:
