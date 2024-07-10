@@ -83,9 +83,7 @@ class Routes(commands.Cog):
 	@Server.route()
 	async def get_username(self, data):
 		try:
-			username = (self.bot.get_user(data['user_id'])).name
-			if username is None:
-				username = (await self.bot.fetch_user(data['user_id'])).name
+			username = (await self.bot.fetch_user(data['user_id'])).name
 		except Exception:
 			pass
 		if username is None:
