@@ -26,20 +26,21 @@ from discord.ext.ipc.server import Server
 from discord.ext.ipc.objects import ClientPayload
 from utils import utils
 import importlib
+import asyncio
 
 class Routes(commands.Cog):
 	def __init__(self, bot: commands.Bot):
 		self.bot = bot
-		if not hasattr(bot, "ipc"):
+		if not hasattr(self, "ipc"):
 			config_data = utils.load_config()
-			bot.ipc = ipc.Server(self.bot, secret_key=config_data['dashboard']['ipc_secret'])
+			self.ipc = ipc.Server(self.bot, secret_key=config_data['dashboard']['ipc_secret'])
 	
 	async def cog_load(self) -> None:
-		await self.bot.ipc.start()
+		asyncio.create_task(self.ipc.start())
 
 	async def cog_unload(self) -> None:
-		await self.bot.ipc.stop()
-		self.bot.ipc = None
+		await self.ipc.stop()
+		self.ipc = None
 
 	@Server.route()
 	async def get_guild_ids(self, data):
@@ -82,7 +83,7 @@ class Routes(commands.Cog):
 	@Server.route()
 	async def get_username(self, data):
 		try:
-			username = self.bot.get_user(data['user_id']).name
+			username = (await self.bot.fetch_user(data['user_id'])).name
 		except Exception:
 			pass
 		if username is None:

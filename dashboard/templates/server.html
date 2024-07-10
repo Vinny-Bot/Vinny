@@ -81,12 +81,127 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 				</div>
 			</div>
 		</div>
+		<div class="panel is-warning">
+			<p class="panel-heading">Event configuration</p>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Don't log events from bots</label>
+					<div class="control">
+						<div class="select">
+							<select id="bot_filter" name="bot_filter">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log message edits</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_message_edit" name="on_message_edit">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log message deletes</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_message_delete" name="on_message_delete">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log member joins</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_member_join" name="on_member_join">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log member leaves</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_member_leave" name="on_member_leave">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log member updates</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_member_update" name="on_member_update">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log channel creation</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_guild_channel_create" name="on_guild_channel_create">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Log channel deletion</label>
+					<div class="control">
+						<div class="select">
+							<select id="on_guild_channel_delete" name="on_guild_channel_delete">
+								<option value="0">False</option>
+								<option value="1">True</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 		<div class="panel is-success">
 			<div class="panel-block">
 				<div class="control">
-					<input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ log_channel }}">
-					<input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ event_log_channel }}">
-					<input type="hidden" id="db_nonce_filter" name="db_nonce_filter" value="{{ nonce_filter }}">
+					<input type="hidden" id="db_log_channel" name="db_log_channel" value="{{ db_values['log_channel_id'] }}">
+					<input type="hidden" id="db_event_log_channel" name="db_event_log_channel" value="{{ db_values['event_log_channel_id'] }}">
+					<input type="hidden" id="db_nonce_filter" name="db_nonce_filter" value="{{ db_values['nonce_filter'] }}">
+					<input type="hidden" id="db_bot_filter" name="db_bot_filter" value="{{ db_values['bot_filter'] }}">
+					<input type="hidden" id="db_on_message_edit" name="db_on_message_edit" value="{{ db_values['on_message_edit'] }}">
+					<input type="hidden" id="db_on_message_delete" name="db_on_message_delete" value="{{ db_values['on_message_delete'] }}">
+					<input type="hidden" id="db_on_guild_channel_create" name="db_on_guild_channel_create" value="{{ db_values['on_guild_channel_create'] }}">
+					<input type="hidden" id="db_on_guild_channel_delete" name="db_on_guild_channel_delete" value="{{ db_values['on_guild_channel_delete'] }}">
+					<input type="hidden" id="db_on_member_join" name="db_on_member_join" value="{{ db_values['on_member_join'] }}">
+					<input type="hidden" id="db_on_member_leave" name="db_on_member_leave" value="{{ db_values['on_member_leave'] }}">
+					<input type="hidden" id="db_on_member_update" name="db_on_member_update" value="{{ db_values['on_member_update'] }}">
 					<button type="submit" class="button is-primary">Save</button><br>
 					{% if saved == True %}
 						<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
@@ -94,14 +209,24 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 				</div>
 			</div>
 		</div>
+		<br>
+		<br>
 		</form>
 	</div>
 </section>
 <script>
 	$(document).ready(function() {
-		$("#log_channel").val(document.getElementById("db_log_channel").value)
-		$("#event_log_channel").val(document.getElementById("db_event_log_channel").value)
-		$("#nonce_filter").val(document.getElementById("db_nonce_filter").value)
-	});
+		var dbElements = {};
+		$('[id^="db_"]').each(function() {
+			var id = $(this).attr('id');
+			var value = $(this).val();
+			dbElements[id] = value;
+		});
+	
+		$.each(dbElements, function(id, value) {
+			var newId = id.replace('db_', '');
+			$('#' + newId).val(value);
+		});
+	});	
 </script>
 {% endblock %}

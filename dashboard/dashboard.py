@@ -31,7 +31,8 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.2.5"
+dashboard_version = "1.2.6"
+cached_usernames = {}
 
 app = Flask(__name__)
 
@@ -165,31 +166,62 @@ def server_view(guild_id):
 
 	guild_channels = asyncio.run(ipc.request("get_guild_channels", guild_id=guild_id))
 	conn, c = db.db_connect()
+	c.execute("INSERT OR IGNORE INTO guilds (guild_id) VALUES (?)", (guild_id,))
+	conn.commit()
 	if request.method == 'POST':
-		log_channel = request.form["log_channel"]
-		event_log_channel = request.form["event_log_channel"]
-		nonce_filter = request.form["nonce_filter"]
-		if nonce_filter == "0":
-			nonce_filter = 0
-		else:
-			nonce_filter = 1
-		if log_channel == 0 or log_channel in guild_channels.response:
-			db.set_log_channel(guild_id, log_channel, conn, c)
-		if event_log_channel == 0 or event_log_channel in guild_channels.response:
-			db.set_event_log_channel(guild_id, event_log_channel, conn, c)
-		if nonce_filter == 0 or nonce_filter == 1:
-			db.set_nonce_filter_status(guild_id, nonce_filter, conn, c)
-		db_log_channel = db.get_log_channel(guild_id, c)
-		db_event_log_channel = db.get_event_log_channel(guild_id, c)
-		db_nonce_filter = db.get_nonce_filter_status(guild_id, c)
+		form_fields = {
+			"log_channel_id": request.form["log_channel"],
+			"event_log_channel_id": request.form["event_log_channel"],
+			"nonce_filter": int(request.form["nonce_filter"]),
+			"bot_filter": int(request.form["bot_filter"]),
+			"on_message_delete": int(request.form["on_message_delete"]),
+			"on_message_edit": int(request.form["on_message_edit"]),
+			"on_member_join": int(request.form["on_member_join"]),
+			"on_member_leave": int(request.form["on_member_leave"]),
+			"on_member_update": int(request.form["on_member_update"]),
+			"on_guild_channel_create": int(request.form["on_guild_channel_create"]),
+			"on_guild_channel_delete": int(request.form["on_guild_channel_delete"])
+		}
+		for form in form_fields:
+			if form_fields[form] == 0 or form_fields[form] == 1 or form_fields[form] in guild_channels.response:
+				db.set_config_value(guild_id, form, form_fields[form], conn, c)
+		db_values = {}
+		defaults = {
+			"log_channel_id": 0,
+			"event_log_channel_id": 0,
+			"nonce_filter": 0,
+			"bot_filter": 0,
+			"on_message_delete": 1,
+			"on_message_edit": 1,
+			"on_member_join": 1,
+			"on_member_leave": 1,
+			"on_member_update": 1,
+			"on_guild_channel_create": 1,
+			"on_guild_channel_delete": 1,
+		}
+		for key in defaults:
+			db_values[f"{key}"] = db.get_config_value(guild_id, key, c, defaults[f"{key}"])
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, log_channel=db_log_channel, event_log_channel=db_event_log_channel, nonce_filter=db_nonce_filter, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=True, db_values=db_values, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 	else:
-		db_log_channel = db.get_log_channel(guild_id, c)
-		db_event_log_channel = db.get_event_log_channel(guild_id, c)
-		db_nonce_filter = db.get_nonce_filter_status(guild_id, c)
+		db_values = {}
+		defaults = {
+			"log_channel_id": 0,
+			"event_log_channel_id": 0,
+			"nonce_filter": 0,
+			"bot_filter": 0,
+			"on_message_delete": 1,
+			"on_message_edit": 1,
+			"on_member_join": 1,
+			"on_member_leave": 1,
+			"on_member_update": 1,
+			"on_guild_channel_create": 1,
+			"on_guild_channel_delete": 1,
+		}
+		for key in defaults:
+			db_values[f"{key}"] = db.get_config_value(guild_id, key, c, defaults[f"{key}"])
 		conn.close()
-		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, log_channel=db_log_channel, event_log_channel=db_event_log_channel, nonce_filter=db_nonce_filter, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
+		return render_template("server.html", guild=guild_obj, user=user, guild_channels=guild_channels.response, saved=False, db_values=db_values, title=f"{guild_name}", description=f"{guild_name} configuration panel", url=f"{config_data['dashboard']['url']}{url_for('server_view', guild_id=guild_id)}")
 
 @app.route("/dashboard/server/<int:guild_id>/moderations/")
 async def moderations_redirect(guild_id):
@@ -222,8 +254,16 @@ async def moderations(guild_id, page_number):
 				hero_chunk = []
 				for moderation in chunk:
 					mutable_moderation = list(moderation)
-					mutable_moderation[2] = (await ipc.request("get_username", user_id=mutable_moderation[2])).response
-					mutable_moderation[3] = (await ipc.request("get_username", user_id=mutable_moderation[3])).response
+					if moderation[2] not in cached_usernames:	
+						mutable_moderation[2] = (await ipc.request("get_username", user_id=mutable_moderation[2])).response
+						cached_usernames.update({moderation[2]: mutable_moderation[2]})
+					else:
+						mutable_moderation[2] = cached_usernames[moderation[2]]
+					if moderation[3] not in cached_usernames:	
+						mutable_moderation[3] = (await ipc.request("get_username", user_id=mutable_moderation[3])).response
+						cached_usernames.update({moderation[3]: mutable_moderation[3]})
+					else:
+						mutable_moderation[3] = cached_usernames[moderation[3]]
 					mutable_moderation[7] = (datetime.fromtimestamp(float(moderation[7]))).strftime("%Y-%m-%d %H:%M:%S")
 					if mutable_moderation[8] is None or mutable_moderation[8] == "N/A":
 						mutable_moderation[8] = ""
