@@ -82,14 +82,14 @@ class moderation(commands.Cog):
 		else:
 			await interaction.response.send_message(message, ephemeral=True)
 
-	@app_commands.command(description="Ban a member")
-	@app_commands.describe(victim="Member to sanction")
+	@app_commands.command(description="Ban a user")
+	@app_commands.describe(victim="User to sanction")
 	@app_commands.describe(severity="Type of sanction (S3 = Tempban, S4 = Permban)")
 	@app_commands.describe(duration="Time of ban (eg: 1s for 1 second, 1m for 1 minute, 1h for 1 hour, 1d for 1 day.)")
 	@app_commands.describe(reason="Reason of ban")
 	@app_commands.describe(purge="Purge all messages within 7 days")
-	@app_commands.rename(victim='member')
-	async def ban(self,interaction: discord.Interaction, victim: discord.Member, severity: Literal['S3', 'S4'], reason: str, purge: Literal['No', 'Yes'], duration: str = None):
+	@app_commands.rename(victim='user')
+	async def ban(self,interaction: discord.Interaction, victim: discord.Member | discord.User, severity: Literal['S3', 'S4'], reason: str, purge: Literal['No', 'Yes'], duration: str = None):
 		success, message = utils.permission_check(interaction.user, victim, "Ban")
 		if success:
 			try:
@@ -113,12 +113,13 @@ class moderation(commands.Cog):
 					delete_days = 0
 				else:
 					delete_days = 7
-				try:
-					channel = await victim.create_dm()
-					await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Ban"))
-				except Exception:
-					pass
-				await victim.ban(delete_message_days=delete_days, reason=f"{reason} - {interaction.user.name}\nbanned for {duration}")
+				if isinstance(victim, discord.Member):
+					try:
+						channel = await victim.create_dm()
+						await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=reason, duration=duration, severity=severity, moderation_type="Ban"))
+					except Exception:
+						pass
+				await interaction.guild.ban(user=victim, delete_message_days=delete_days, reason=f"{reason} - {interaction.user.name}\nbanned for {duration}")
 				await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`{duration}`**: **{severity}. {reason}**")
 				await moderation.log_embed(self,victim=victim, severity=severity, duration=duration, reason=reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
 			except Exception as e:
