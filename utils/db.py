@@ -44,8 +44,21 @@ def create_moderation_table():
 						time TEXT,
 						duration INTEGER,
 		   				active BOOLEAN,
-						tempban_active BOOLEAN
+						tempban_active BOOLEAN,
+						escalated BOOLEAN
 					)''')
+	c.execute("PRAGMA table_info(moderations)")
+	columns = [column[1] for column in c.fetchall()]
+	
+	new_columns = {
+		'escalated': "BOOLEAN"
+	}
+
+	for column in new_columns:
+		if column not in columns:
+			c.execute(f'''
+				ALTER TABLE moderations ADD COLUMN {column} {new_columns[column]}
+			''')
 
 	conn.commit()
 	conn.close()
@@ -65,22 +78,29 @@ def create_guilds_table():
 					on_member_leave BOOLEAN DEFAULT 1,
 					on_member_update BOOLEAN DEFAULT 1,
 					on_guild_channel_create BOOLEAN DEFAULT 1,
-					on_guild_channel_delete BOOLEAN DEFAULT 1
+					on_guild_channel_delete BOOLEAN DEFAULT 1,
+					max_moderations_enabled BOOLEAN DEFAULT 0,
+					max_s1_moderations INTEGER DEFAULT 1,
+					max_s2_moderations INTEGER DEFAULT 4,
+					max_s3_moderations INTEGER DEFAULT 1
 				)''')
 
 	c.execute("PRAGMA table_info(guilds)")
 	columns = [column[1] for column in c.fetchall()]
 	
 	new_columns = {
-		'nonce_filter': 0, 'bot_filter': 1, 'on_message_delete': 1, 
-		'on_message_edit': 1, 'on_member_join': 1, 'on_member_leave': 1,
-		'on_member_update': 1, 'on_guild_channel_create': 1, 'on_guild_channel_delete': 1
+		'nonce_filter': ["BOOLEAN", 0], 'bot_filter': ["BOOLEAN", 1], 'on_message_delete': ["BOOLEAN", 1], 
+		'on_message_edit': ["BOOLEAN", 1], 'on_member_join': ["BOOLEAN", 1], 'on_member_leave': ["BOOLEAN", 1],
+		'on_member_update': ["BOOLEAN", 1], 'on_guild_channel_create': ["BOOLEAN", 1], 'on_guild_channel_delete': ["BOOLEAN", 1],
+
+		'max_moderations_enabled': ["BOOLEAN", 0],
+		'max_s1_moderations': ["INTEGER", 1], 'max_s2_moderations': ["INTEGER", 4], 'max_s3_moderations': ["INTEGER", 1]
 	}
 
 	for column in new_columns:
 		if column not in columns:
 			c.execute(f'''
-				ALTER TABLE guilds ADD COLUMN {column} BOOLEAN DEFAULT {new_columns[column]}
+				ALTER TABLE guilds ADD COLUMN {column} {new_columns[column][0]} DEFAULT {new_columns[column][1]}
 			''')
 
 	conn.commit()
@@ -96,8 +116,8 @@ def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation
 		result = c.fetchone()
 		case_id = 1 if result[0] == None else result[0] + 1
 		
-		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, active, tempban_active)
-					VALUES (?,?,?,?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, True, True))
+		c.execute('''INSERT INTO moderations (moderation_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, active, tempban_active, escalated)
+					VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''', (case_id, guild_id, user_id, moderator_id, moderation_type, reason, severity, time, duration, True, True, False))
 		conn.commit()
 		return case_id
 	except Exception as e:
@@ -141,11 +161,23 @@ def set_tempban_inactive(moderation_id, conn: sqlite3.Connection, c: sqlite3.Cur
 	c.execute('UPDATE moderations SET tempban_active=0 WHERE moderation_id=?', (moderation_id,))
 	conn.commit()
 
+def set_moderation_escalated(moderation_id, conn: sqlite3.Connection, c: sqlite3.Cursor):
+	c.execute('UPDATE moderations SET escalated=1 WHERE moderation_id=?', (moderation_id,))
+	conn.commit()
+
 def get_moderations_by_user_and_guild(guild_id: int, user_id: int, inactive: bool, c: sqlite3.Cursor):
 	if not inactive:
 		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=? AND active=1", (guild_id, user_id,))
 	else:
 		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=?", (guild_id, user_id,))
+	moderations = c.fetchall()
+	return moderations
+
+def get_moderations_by_user_and_guild_and_sanction(guild_id: int, user_id: int, sanction: str, c: sqlite3.Cursor):
+	if sanction in ("S2", "S3"):
+		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=? and severity=? AND active=1", (guild_id, user_id, sanction,))
+	elif sanction in ("S1", "S4"):
+		c.execute("SELECT * FROM moderations WHERE guild_id=? AND user_id=? and severity=? AND active=1 AND escalated<>1", (guild_id, user_id, sanction,))
 	moderations = c.fetchall()
 	return moderations
 

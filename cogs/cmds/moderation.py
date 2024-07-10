@@ -67,6 +67,67 @@ class moderation(commands.Cog):
 					await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
 					return
 				conn, c = db.db_connect()
+				if severity == "S2":
+					s2_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S2", c)
+					s3_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S3", c)
+					s4_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S4", c)
+					bans_total = s3_mods_total + s4_mods_total
+					max_s2_moderations = db.get_config_value(guild_id, "max_s2_moderations", c, 1)
+					max_s3_moderations = db.get_config_value(guild_id, "max_s3_moderations", c, 1)
+					if len(s3_mods_total) >= db.get_config_value(guild_id, "max_s3_moderations", c, 1):
+						ratio = int(len(bans_total) / max_s3_moderations)
+						if ratio == 1:
+							factor = 2
+						elif ratio >= 2:
+							factor = ratio + 1
+						max_s2_moderations = max_s2_moderations * factor
+					if len(s2_mods_total) + 1 > max_s2_moderations and db.get_config_value(guild_id, "max_moderations_enabled", c, 0):
+						if len(s3_mods_total) + 1 > max_s3_moderations:
+							severity = "S4"
+							class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S1s, S2s, and S3s"):
+								new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+								async def on_submit(self, interaction: discord.Interaction):
+									s3_mods_total.reverse()
+									db.set_moderation_escalated(s3_mods_total[0][0], conn, c)
+									mod_reason = f"[escalated from: ID {s3_mods_total[0][0]} - S3] {self.new_reason.value if self.new_reason.value else reason}" 
+									moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
+									conn.close()
+									try:
+										channel = await victim.create_dm()
+										await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=None, severity=severity, moderation_type="Ban"))
+									except Exception:
+										pass
+									await interaction.guild.ban(user=victim, delete_message_days=0, reason=f"{mod_reason} - {interaction.user.name}\nbanned for N/A")
+									await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`N/A`**: **{severity}. {mod_reason}**")
+									await moderation.log_embed(parent_self,victim=victim, severity=severity, duration=None, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
+							return await interaction.response.send_modal(escalation_modal())
+						else:
+							pass
+						parent_self = self
+						class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S2s"):
+							new_duration = discord.ui.TextInput(label=f"New duration", style=discord.TextStyle.short, placeholder="4d", required=True, max_length=4)
+							new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+							severity = "S3"
+							async def on_submit(self, interaction: discord.Interaction):
+								s2_mods_total.reverse()
+								mod_duration = self.new_duration.value
+								try:
+									duration_delta = utils.parse_duration(mod_duration)
+								except Exception:
+									return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+								db.set_moderation_escalated(s2_mods_total[0][0], conn, c)
+								mod_reason = f"[escalated from: ID {s2_mods_total[0][0]} - S2] {self.new_reason.value if self.new_reason.value else reason}" 
+								moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=self.severity, duration=mod_duration, time=str(time.time()), conn=conn, c=c)
+								conn.close()
+								try:
+									channel = await victim.create_dm()
+									await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=mod_duration, severity=self.severity, moderation_type="Ban"))
+								except Exception:
+									pass
+								await interaction.guild.ban(user=victim, delete_message_days=0, reason=f"{mod_reason} - {interaction.user.name}\nbanned for {mod_duration}")
+								await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`{mod_duration}`**: **{self.severity}. {mod_reason}**")
+								await moderation.log_embed(parent_self,victim=victim, severity=self.severity, duration=mod_duration, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
+						return await interaction.response.send_modal(escalation_modal())
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
 				conn.close()
 				try:
@@ -106,13 +167,36 @@ class moderation(commands.Cog):
 							return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
 					else:
 						return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
-				conn, c = db.db_connect()
-				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
-				conn.close()
 				if purge == "No":
 					delete_days = 0
 				else:
 					delete_days = 7
+				conn, c = db.db_connect()
+				if severity == "S3":
+					s3_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S3", c)
+					max_s3_moderations = db.get_config_value(guild_id, "max_s3_moderations", c, 1)
+					parent_self = self
+					if len(s3_mods_total) + 1 > max_s3_moderations:
+						severity = "S4"
+						class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S3s"):
+							new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+							async def on_submit(self, interaction: discord.Interaction):
+								s3_mods_total.reverse()
+								db.set_moderation_escalated(s3_mods_total[0][0], conn, c)
+								mod_reason = f"[escalated from: ID {s3_mods_total[0][0]} - S3] {self.new_reason.value if self.new_reason.value else reason}" 
+								moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
+								conn.close()
+								try:
+									channel = await victim.create_dm()
+									await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=None, severity=severity, moderation_type="Ban"))
+								except Exception:
+									pass
+								await interaction.guild.ban(user=victim, delete_message_days=delete_days, reason=f"{mod_reason} - {interaction.user.name}\nbanned for N/A")
+								await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`N/A`**: **{severity}. {mod_reason}**")
+								await moderation.log_embed(parent_self,victim=victim, severity=severity, duration=None, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
+						return await interaction.response.send_modal(escalation_modal())
+				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
+				conn.close()
 				if isinstance(victim, discord.Member):
 					try:
 						channel = await victim.create_dm()
@@ -140,6 +224,99 @@ class moderation(commands.Cog):
 				user_id = victim.id
 				moderator_id = interaction.user.id
 				conn, c = db.db_connect()
+				if severity == "S1":
+					s1_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, severity, c)
+					s3_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S3", c)
+					s4_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S4", c)
+					bans_total = s3_mods_total + s4_mods_total
+					max_s1_moderations = db.get_config_value(guild_id, "max_s1_moderations", c, 1)
+					max_s2_moderations = db.get_config_value(guild_id, "max_s2_moderations", c, 1)
+					max_s3_moderations = db.get_config_value(guild_id, "max_s3_moderations", c, 1)
+					if len(s3_mods_total) >= max_s3_moderations:
+						ratio = int(len(bans_total) / max_s3_moderations)
+						if ratio == 1:
+							factor = 2
+						elif ratio >= 2:
+							factor = ratio + 1
+						max_s1_moderations = max_s1_moderations * factor
+						max_s2_moderations = max_s2_moderations * factor
+					if len(s1_mods_total) + 1 > max_s1_moderations and db.get_config_value(guild_id, "max_moderations_enabled", c, 0):
+						s2_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S2", c)
+						parent_self = self
+						severity = "S2"
+						if len(s2_mods_total) + 1 > max_s2_moderations:
+							severity = "S3"
+							if len(s3_mods_total) + 1 > max_s3_moderations:
+								severity = "S4"
+								class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S1s, S2s, and S3s"):
+									new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+									async def on_submit(self, interaction: discord.Interaction):
+										s3_mods_total.reverse()
+										db.set_moderation_escalated(s3_mods_total[0][0], conn, c)
+										mod_reason = f"[escalated from: ID {s3_mods_total[0][0]} - S3] {self.new_reason.value if self.new_reason.value else reason}" 
+										moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
+										conn.close()
+										try:
+											channel = await victim.create_dm()
+											await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=None, severity=severity, moderation_type="Ban"))
+										except Exception:
+											pass
+										await interaction.guild.ban(user=victim, reason=f"{mod_reason} - {interaction.user.name}\nbanned for N/A")
+										await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`N/A`**: **{severity}. {mod_reason}**")
+										await moderation.log_embed(parent_self,victim=victim, severity=severity, duration=None, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
+								return await interaction.response.send_modal(escalation_modal())
+							else:
+								pass
+							class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S1s and S2s"):
+								new_duration = discord.ui.TextInput(label="New duration", style=discord.TextStyle.short, placeholder="4d", required=True, max_length=4)
+								new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+
+								async def on_submit(self, interaction: discord.Interaction):
+									s2_mods_total.reverse()
+									mod_duration = self.new_duration.value
+									try:
+										duration_delta = utils.parse_duration(mod_duration)
+									except Exception:
+										return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+									db.set_moderation_escalated(s2_mods_total[0][0], conn, c)
+									mod_reason = f"[escalated from: ID {s2_mods_total[0][0]} - S2] {self.new_reason.value if self.new_reason.value else reason}" 
+									moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=mod_duration, time=str(time.time()), conn=conn, c=c)
+									conn.close()
+									try:
+										channel = await victim.create_dm()
+										await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=mod_duration, severity=severity, moderation_type="Ban"))
+									except Exception:
+										pass
+									await interaction.guild.ban(user=victim, reason=f"{mod_reason} - {interaction.user.name}\nbanned for {mod_duration}")
+									await interaction.response.send_message(f"Moderation `{moderation_id}`: Banned <@{user_id}> for **`{mod_duration}`**: **{severity}. {mod_reason}**")
+									await moderation.log_embed(parent_self,victim=victim, severity=severity, duration=mod_duration, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Ban", guild=interaction.guild)
+							return await interaction.response.send_modal(escalation_modal())
+						else:
+							pass
+						class escalation_modal(discord.ui.Modal, title = "Escalation - exceeded max S1s"):
+							new_duration = discord.ui.TextInput(label="New duration", style=discord.TextStyle.short, placeholder="15m", required=True, max_length=4)
+							new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
+							async def on_submit(self, interaction: discord.Interaction):
+								s1_mods_total.reverse()
+								duration = self.new_duration.value
+								try:
+									duration_delta = utils.parse_duration(duration)
+								except Exception:
+									await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
+									return
+								db.set_moderation_escalated(s1_mods_total[0][0], conn, c)
+								mod_reason = f"[escalated from: ID {s1_mods_total[0][0]} - S1] {self.new_reason.value if self.new_reason.value else reason}" 
+								moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Mute", reason=mod_reason, severity=severity, duration=duration, time=str(time.time()), conn=conn, c=c)
+								conn.close()
+								try:
+									channel = await victim.create_dm()
+									await channel.send(embed=await embeds.dm_moderation_embed(guild=interaction.guild, victim=victim, reason=mod_reason, duration=duration, severity=severity, moderation_type="Mute"))
+								except Exception:
+									pass
+								await victim.timeout(duration_delta, reason=f"{mod_reason} - {interaction.user.name}")
+								await interaction.response.send_message(f"Moderation `{moderation_id}`: Muted <@{user_id}> for **`{duration}`**: **{severity}. {mod_reason}**")
+								await moderation.log_embed(parent_self,victim=victim, severity=severity, duration=duration, reason=mod_reason, moderator=interaction.user, moderation_id=moderation_id, moderation_type="Mute", guild=interaction.guild)
+						return await interaction.response.send_modal(escalation_modal())
 				moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Warn", reason=reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
 				conn.close()
 				await interaction.response.send_message(f"Moderation `{moderation_id}`: Warned <@{user_id}>: **{severity}. {reason}**")
@@ -249,6 +426,7 @@ class moderation(commands.Cog):
 		moderations = db.get_moderations_by_user_and_guild(interaction.guild.id, member.id, inactive, c)
 		conn.close()
 		try:
+			moderations = [moderation for moderation in moderations if moderation[9] != 0] if inactive else moderations
 			for i in range(0, len(moderations), 6):
 				embed = discord.Embed(title=f"{member.name}'s moderations", description=f"Page {page}")
 				chunk = moderations[i:i+6]
