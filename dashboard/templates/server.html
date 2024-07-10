@@ -80,6 +80,43 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					</div>
 				</div>
 			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label" data-tooltip="Automatically 'escalate' moderations when their sanctions exceed the limit">Maximum moderations <i class="fas fa-info-circle"></i></label>
+					<div class="control">
+						<div class="select">
+							<select id="max_moderations_enabled" name="max_moderations_enabled">
+								<option value="1">Enabled</option>
+								<option value="0">Disabled</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Maximum S1 moderations</label>
+					<div class="control">
+						<input class="input" id="max_s1_moderations" name="max_s1_moderations" type="text" min="0" step="1">
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Maximum S2 moderations</label>
+					<div class="control">
+						<input class="input" id="max_s2_moderations" name="max_s2_moderations" type="text" min="0" step="1">
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Maximum S3 moderations</label>
+					<div class="control">
+						<input class="input" id="max_s3_moderations" name="max_s3_moderations" type="text" min="0" step="1">
+					</div>
+				</div>
+			</div>
 		</div>
 		<div class="panel is-warning">
 			<p class="panel-heading">Event configuration</p>
@@ -202,6 +239,10 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<input type="hidden" id="db_on_member_join" name="db_on_member_join" value="{{ db_values['on_member_join'] }}">
 					<input type="hidden" id="db_on_member_leave" name="db_on_member_leave" value="{{ db_values['on_member_leave'] }}">
 					<input type="hidden" id="db_on_member_update" name="db_on_member_update" value="{{ db_values['on_member_update'] }}">
+					<input type="hidden" id="db_max_moderations_enabled" name="db_max_moderations_enabled" value="{{ db_values['max_moderations_enabled'] }}">
+					<input type="hidden" id="db_max_s1_moderations" name="db_max_s1_moderations" value="{{ db_values['max_s1_moderations'] }}">
+					<input type="hidden" id="db_max_s2_moderations" name="db_max_s2_moderations" value="{{ db_values['max_s2_moderations'] }}">
+					<input type="hidden" id="db_max_s3_moderations" name="db_max_s3_moderations" value="{{ db_values['max_s3_moderations'] }}">
 					<button type="submit" class="button is-primary">Save</button><br>
 					{% if saved == True %}
 						<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
@@ -227,6 +268,22 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 			var newId = id.replace('db_', '');
 			$('#' + newId).val(value);
 		});
+
+		$('#max_s1_moderations, #max_s2_moderations, #max_s3_moderations').keypress(function(e) {
+			var char = String.fromCharCode(e.which);
+			if (!(/[0-9]/.test(char))) {
+				e.preventDefault();
+			}
+		});
+
+		function toggleModerationInputs() {
+			var isEnabled = $('#max_moderations_enabled').val() !== "0";
+			$('#max_s1_moderations, #max_s2_moderations, #max_s3_moderations').prop('disabled', !isEnabled);
+		}
+	
+		toggleModerationInputs();
+	
+		$('#max_moderations_enabled').change(toggleModerationInputs);
 	});	
 </script>
 {% endblock %}

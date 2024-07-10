@@ -20,7 +20,6 @@
 
 import asyncio
 from datetime import datetime
-from time import strftime
 from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized, models
 from discord.ext.ipc import Client
@@ -173,6 +172,10 @@ def server_view(guild_id):
 			"log_channel_id": request.form["log_channel"],
 			"event_log_channel_id": request.form["event_log_channel"],
 			"nonce_filter": int(request.form["nonce_filter"]),
+			"max_moderations_enabled": int(request.form["max_moderations_enabled"]),
+			"max_s1_moderations": int(request.form["max_s1_moderations"]),
+			"max_s2_moderations": int(request.form["max_s2_moderations"]),
+			"max_s3_moderations": int(request.form["max_s3_moderations"]),
 			"bot_filter": int(request.form["bot_filter"]),
 			"on_message_delete": int(request.form["on_message_delete"]),
 			"on_message_edit": int(request.form["on_message_edit"]),
@@ -183,7 +186,7 @@ def server_view(guild_id):
 			"on_guild_channel_delete": int(request.form["on_guild_channel_delete"])
 		}
 		for form in form_fields:
-			if form_fields[form] == 0 or form_fields[form] == 1 or form_fields[form] in guild_channels.response:
+			if form_fields[form] == 0 or form_fields[form] == 1 or form_fields[form] in guild_channels.response or form in ('max_s1_moderations', 'max_s2_moderations', 'max_s3_moderations'):
 				db.set_config_value(guild_id, form, form_fields[form], conn, c)
 		db_values = {}
 		defaults = {
@@ -198,6 +201,10 @@ def server_view(guild_id):
 			"on_member_update": 1,
 			"on_guild_channel_create": 1,
 			"on_guild_channel_delete": 1,
+			"max_moderations_enabled": 0,
+			"max_s1_moderations": 1,
+			"max_s2_moderations": 4,
+			"max_s3_moderations": 1
 		}
 		for key in defaults:
 			db_values[f"{key}"] = db.get_config_value(guild_id, key, c, defaults[f"{key}"])
@@ -217,6 +224,10 @@ def server_view(guild_id):
 			"on_member_update": 1,
 			"on_guild_channel_create": 1,
 			"on_guild_channel_delete": 1,
+			"max_moderations_enabled": 0,
+			"max_s1_moderations": 1,
+			"max_s2_moderations": 4,
+			"max_s3_moderations": 1
 		}
 		for key in defaults:
 			db_values[f"{key}"] = db.get_config_value(guild_id, key, c, defaults[f"{key}"])
@@ -238,15 +249,14 @@ async def moderations(guild_id, page_number):
 	total_pages = 0
 	hero_chunk = None
 	lock = False
+	show_lock = False
 	conn, c = db.db_connect()
 	moderations = db.get_moderations_by_guild(guild_id, c)
 	conn.close()
 	try:
 		order = request.args.get('order', default='newest', type=str)
 		show_inactive = request.args.get('show_inactive', default='false', type=str)
-		for moderation in moderations:
-			if show_inactive == "false" and moderation[9] == 0:
-				moderations.remove(moderation)
+		moderations = [moderation for moderation in moderations if moderation[9] != 0] if show_inactive == "false" else moderations
 		if order == "newest":
 			moderations.reverse()
 		for i in range(0, len(moderations), 12):
