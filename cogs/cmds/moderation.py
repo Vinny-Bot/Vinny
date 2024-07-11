@@ -80,7 +80,10 @@ class moderation(commands.Cog):
 							factor = 2
 						elif ratio >= 2:
 							factor = ratio + 1
-						max_s2_moderations = max_s2_moderations * factor
+						if len(s2_mods_total) + 1 > max_s2_moderations:
+							if ((len(s2_mods_total)) / factor) < factor:
+								factor = factor - 1
+							max_s2_moderations = max_s2_moderations * factor
 					if len(s2_mods_total) + 1 > max_s2_moderations and db.get_config_value(guild_id, "max_moderations_enabled", c, 0):
 						if len(s3_mods_total) + 1 > max_s3_moderations:
 							severity = "S4"
@@ -88,7 +91,9 @@ class moderation(commands.Cog):
 								new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
 								async def on_submit(self, interaction: discord.Interaction):
 									s3_mods_total.reverse()
+									s2_mods_total.reverse()
 									db.set_moderation_escalated(s3_mods_total[0][0], conn, c)
+									db.set_moderation_escalated(s2_mods_total[0][0], conn, c)
 									mod_reason = f"[escalated from: ID {s3_mods_total[0][0]} - S3] {self.new_reason.value if self.new_reason.value else reason}" 
 									moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
 									conn.close()
@@ -226,6 +231,7 @@ class moderation(commands.Cog):
 				conn, c = db.db_connect()
 				if severity == "S1":
 					s1_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, severity, c)
+					s2_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S2", c)
 					s3_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S3", c)
 					s4_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S4", c)
 					bans_total = s3_mods_total + s4_mods_total
@@ -238,10 +244,11 @@ class moderation(commands.Cog):
 							factor = 2
 						elif ratio >= 2:
 							factor = ratio + 1
-						max_s1_moderations = max_s1_moderations * factor
-						max_s2_moderations = max_s2_moderations * factor
+						if len(s2_mods_total) + 1 > max_s2_moderations:
+							if ((len(s2_mods_total)) / factor) < factor:
+								factor = factor - 1
+							max_s2_moderations = max_s2_moderations * factor
 					if len(s1_mods_total) + 1 > max_s1_moderations and db.get_config_value(guild_id, "max_moderations_enabled", c, 0):
-						s2_mods_total = db.get_moderations_by_user_and_guild_and_sanction(guild_id, user_id, "S2", c)
 						parent_self = self
 						severity = "S2"
 						if len(s2_mods_total) + 1 > max_s2_moderations:
@@ -252,7 +259,11 @@ class moderation(commands.Cog):
 									new_reason = discord.ui.TextInput(label="New reason (OPTIONAL)", style=discord.TextStyle.paragraph, required=False, placeholder=reason, max_length=256)
 									async def on_submit(self, interaction: discord.Interaction):
 										s3_mods_total.reverse()
+										s2_mods_total.reverse()
+										s1_mods_total.reverse()
 										db.set_moderation_escalated(s3_mods_total[0][0], conn, c)
+										db.set_moderation_escalated(s2_mods_total[0][0], conn, c)
+										db.set_moderation_escalated(s1_mods_total[0][0], conn, c)
 										mod_reason = f"[escalated from: ID {s3_mods_total[0][0]} - S3] {self.new_reason.value if self.new_reason.value else reason}" 
 										moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=None, time=str(time.time()), conn=conn, c=c)
 										conn.close()
@@ -273,12 +284,14 @@ class moderation(commands.Cog):
 
 								async def on_submit(self, interaction: discord.Interaction):
 									s2_mods_total.reverse()
+									s1_mods_total.reverse()
 									mod_duration = self.new_duration.value
 									try:
 										duration_delta = utils.parse_duration(mod_duration)
 									except Exception:
 										return await interaction.response.send_message("Please input a valid timeframe (eg: 1s, 1m, 1h, 1d)", ephemeral=True)
 									db.set_moderation_escalated(s2_mods_total[0][0], conn, c)
+									db.set_moderation_escalated(s1_mods_total[0][0], conn, c)
 									mod_reason = f"[escalated from: ID {s2_mods_total[0][0]} - S2] {self.new_reason.value if self.new_reason.value else reason}" 
 									moderation_id = db.insert_moderation(guild_id=guild_id, user_id=user_id, moderator_id=moderator_id, moderation_type="Ban", reason=mod_reason, severity=severity, duration=mod_duration, time=str(time.time()), conn=conn, c=c)
 									conn.close()
