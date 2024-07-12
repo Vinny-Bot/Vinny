@@ -201,4 +201,5 @@ async def setup(bot):
 	importlib.reload(utils)
 	importlib.reload(db)
 	importlib.reload(embeds)
+	message_delete_embeds = {} # reset to avoid errors
 	await bot.add_cog(events(bot))
