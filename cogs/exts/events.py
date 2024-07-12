@@ -52,6 +52,7 @@ class events(commands.Cog):
 				try:
 					await channel.send(embeds=batch)
 				except Exception:
+					message_delete_embeds[guild_id] = []
 					pass
 
 				# delete the sent embeds from the dictionary and then wait for another schedule job to send & delete the rest
