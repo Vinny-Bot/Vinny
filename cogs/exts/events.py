@@ -49,8 +49,11 @@ class events(commands.Cog):
 			# send in batches of 10 embeds so that api doesnt get mad
 			for i in range(0, len(embeds), 10):
 				batch = embeds[i:i+10]
-				await channel.send(embeds=batch)
-				
+				try:
+					await channel.send(embeds=batch)
+				except Exception:
+					pass
+
 				# delete the sent embeds from the dictionary and then wait for another schedule job to send & delete the rest
 				del message_delete_embeds[guild_id][i:i+10]
 
