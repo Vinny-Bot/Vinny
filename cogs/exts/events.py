@@ -84,6 +84,8 @@ class events(commands.Cog):
 		if payload.cached_message:
 			if db.get_config_value(payload.guild_id, "on_message_delete", c, 1) and payload.cached_message.author.bot:
 				return
+			if len(payload.cached_message.content) > 1024:
+				return
 		if payload.guild_id not in message_delete_embeds:
 			message_delete_embeds[payload.guild_id] = []
 
