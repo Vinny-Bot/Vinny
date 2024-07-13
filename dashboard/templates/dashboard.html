@@ -27,14 +27,17 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	<div class="container buttons has-addons is-centered">
 		{% for guild in guilds %}
 			{% if guild.status == True %}
-				<a class="button is-outlined is-success is-server-button" href="/dashboard/server/{{guild.id}}">
-					<div class="server-icon" style="background-image: url('{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}');"></div>
-					<div class="server-text">{{guild.name}}</div>
+				<a data-tooltip="{{ guild.name }}" class="image is-64x64 is-server-button is-server-image-button" href="/dashboard/server/{{guild.id}}">
+					<img alt="{{ guild.name }}" class="is-rounded" src="{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}">
 				</a>
 			{% else %}
-				<a class="button is-outlined is-danger is-server-button" href="/dashboard/server/{{guild.id}}">
-					<div class="server-icon" style="background-image: url('{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}');"></div>
-					<div class="server-text">{{guild.name}}</div>
+				<a data-tooltip="{{ guild.name }}" class="is-server-button" style="position: relative; display: inline-block;" href="/dashboard/server/{{guild.id}}">
+					<div class="image is-64x64 is-server-image-button">
+						<img alt="{{ guild.name }}" class="is-rounded" src="{{ guild.icon_url if guild.icon_url else 'https://cdn.discordapp.com/embed/avatars/1.png' }}">
+					</div>
+					<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 0px solid; border-radius: 9999px; background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center;">
+						<i class="fas fa-plus-circle" style="color: white;"></i>
+					</div>
 				</a>
 			{% endif %}
 		{% endfor %}

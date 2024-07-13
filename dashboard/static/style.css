@@ -65,7 +65,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	margin-bottom: 5px;
 }
 
-.is-server-button {
+.is-server-image-button {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -74,6 +74,14 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	height: 130px;
 	padding: 5px;
 	text-align: center;
+}
+
+.is-server-button {
+	transition: transform 0.25s ease-in-out;
+}
+
+.is-server-button:hover {
+    transform: scale(1.05);
 }
 
 .server-text {
