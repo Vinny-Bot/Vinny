@@ -18,10 +18,11 @@
 # then contact me for inquiries/questions for permission. You will only be able to
 # use my commits if you have received permission from me. <0vfx@proton.me>
 
-import asyncio
 from datetime import datetime
-from flask import Flask, render_template, redirect, request, url_for, abort
-from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized, models
+from functools import wraps
+from importlib.metadata import requires
+from flask import Flask, render_template, redirect, request, url_for, abort, current_app
+from flaskcord import DiscordOAuth2Session, requires_authorization, Unauthorized, models
 from discord.ext.ipc import Client
 from discord import Guild
 import sys
@@ -30,7 +31,7 @@ sys.path.append(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 from utils import utils, db, info
 from ast import literal_eval
 
-dashboard_version = "1.2.7"
+dashboard_version = "1.2.8"
 cached_usernames = {}
 
 app = Flask(__name__)
@@ -126,10 +127,10 @@ def redirect_unauthorized(e):
 
 @app.route("/dashboard/")
 @requires_authorization
-def dashboard():
+async def dashboard():
 	user = OAuth2.fetch_user()
 	guilds = OAuth2.fetch_guilds() # use cache instead of user.fetch_guilds() to not get rate limited
-	bot_guilds = (asyncio.run(ipc.request("get_guild_ids"))).response
+	bot_guilds = (await (ipc.request("get_guild_ids"))).response
 	bot_guilds = literal_eval(bot_guilds)
 	guilds_array = []
 
@@ -143,18 +144,18 @@ def dashboard():
 
 @app.route("/dashboard/server/<int:guild_id>", methods=['POST', 'GET'])
 @requires_authorization
-def server_view(guild_id):
+async def server_view(guild_id):
 	user = OAuth2.fetch_user()
 	guild_obj = None
 	for guild in OAuth2.fetch_guilds():
 		if guild.id == guild_id:
 			guild_obj = guild
 
-	guild_name = asyncio.run(ipc.request("get_guild_name", guild_id=guild_id)).response
+	guild_name = (await ipc.request("get_guild_name", guild_id=guild_id)).response
 	if guild_name is None:
 		return redirect(f'https://discord.com/oauth2/authorize?&client_id={app.config["DISCORD_CLIENT_ID"]}&scope=bot&permissions=8&guild_id={guild_id}&response_type=code&redirect_uri={app.config["DISCORD_REDIRECT_URI"]}')
 
-	admin_bool = asyncio.run(ipc.request("check_admin", user_id=user.id, guild_id=guild_id))
+	admin_bool = await ipc.request("check_admin", user_id=user.id, guild_id=guild_id)
 	admin_bool = literal_eval(admin_bool.response)
 	if admin_bool == True:
 		pass
@@ -163,7 +164,7 @@ def server_view(guild_id):
 	else:
 		return redirect(f'https://discord.com/oauth2/authorize?&client_id={app.config["DISCORD_CLIENT_ID"]}&scope=bot&permissions=8&guild_id={guild_id}&response_type=code&redirect_uri={app.config["DISCORD_REDIRECT_URI"]}')
 
-	guild_channels = asyncio.run(ipc.request("get_guild_channels", guild_id=guild_id))
+	guild_channels = await ipc.request("get_guild_channels", guild_id=guild_id)
 	conn, c = db.db_connect()
 	c.execute("INSERT OR IGNORE INTO guilds (guild_id) VALUES (?)", (guild_id,))
 	conn.commit()
