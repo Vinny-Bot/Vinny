@@ -15,7 +15,7 @@ Self-hosted moderation bot
 - discord.py
 - discord.py-pagination
 - Flask (flask[async])
-- Flask-Discord
+- Flaskcord
 - better-ipc
 - humanfriendly
 - cogwatch

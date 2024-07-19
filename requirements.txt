@@ -1,7 +1,7 @@
 discord.py >= 2.3.2
 discord.py-pagination >= 0.0.5
 flask[async] >= 3.0.3
-Flask-Discord >= 0.1.69
+Flaskcord >= 0.1.70
 better-ipc >= 2.0.3
 humanfriendly >= 10.0
 cogwatch >= 3.3.1
