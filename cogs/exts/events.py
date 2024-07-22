@@ -67,10 +67,10 @@ class events(commands.Cog):
 		schedule.every(10).seconds.do(lambda: asyncio.create_task(events.send_pending_delete_events(self)))
 
 	async def cog_load(self):
-		asyncio.create_task(self.start_schedule())
-		asyncio.create_task(self.scheduler())
+		self.start_schedule_task = asyncio.create_task(self.start_schedule())
+		self.scheduler_task = asyncio.create_task(self.scheduler())
 
-	def cog_unload(self):
+	async def cog_unload(self):
 		if self.scheduler_task:
 			self.scheduler_task.cancel()
 		if self.start_schedule_task:

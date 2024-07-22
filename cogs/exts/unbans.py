@@ -47,15 +47,14 @@ class unbans(commands.Cog):
 
 	async def cog_load(self):
 		print("starting unban scheduler")
-		asyncio.create_task(self.start_schedule())
-		asyncio.create_task(self.scheduler())
+		self.start_schedule_task = asyncio.create_task(self.start_schedule())
+		self.scheduler_task = asyncio.create_task(self.scheduler())
 
 	async def cog_unload(self):
 		if self.scheduler_task:
 			self.scheduler_task.cancel()
 		if self.start_schedule_task:
 			self.start_schedule_task.cancel()
-
 
 	async def look_for_unbans(self): # check every active tempban for an unban
 		conn, c = db.db_connect()
