@@ -82,10 +82,9 @@ class events(commands.Cog):
 		if db.get_config_value(payload.guild_id, "on_message_delete", c) == 0: return conn.close()
 		global message_delete_embeds
 		if payload.cached_message:
-			if db.get_config_value(payload.guild_id, "on_message_delete", c, 1) and payload.cached_message.author.bot:
-				return
-			if len(payload.cached_message.content) > 1024:
-				return
+			if db.get_config_value(payload.guild_id, "on_message_delete", c, 1) and payload.cached_message.author.bot: return
+			if payload.cached_message.webhook_id: return
+			if len(payload.cached_message.content) > 1024: return
 		if payload.guild_id not in message_delete_embeds:
 			message_delete_embeds[payload.guild_id] = []
 
@@ -98,8 +97,7 @@ class events(commands.Cog):
 		conn, c = db.db_connect()
 		if before.author.bot and db.get_config_value(before.guild.id, "bot_filter", c) == 0 or not before.author.bot:
 			if db.get_config_value(before.guild.id, "on_message_edit", c) == 0: return conn.close()
-			if before.content == after.content:
-				return conn.close()
+			if before.content == after.content: return conn.close()
 			channel_id = db.get_config_value(before.guild.id, "event_log_channel_id", c, 0)
 			channel = await self.bot.fetch_channel(channel_id)
 			embed = await embeds.edit_message_embed(before, after)
@@ -116,6 +114,7 @@ class events(commands.Cog):
 			channel = await self.bot.fetch_channel(channel_id)
 			event_channel = await self.bot.fetch_channel(payload.channel_id)
 			message = await event_channel.fetch_message(payload.message_id)
+			if message.webhook_id: return
 			embed = await embeds.raw_edit_message_embed(payload=payload, message=message)
 			await channel.send(embed=embed)
 
