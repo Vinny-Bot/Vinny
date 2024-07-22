@@ -70,6 +70,7 @@ def create_guilds_table():
 					guild_id INTEGER PRIMARY KEY,
 					log_channel_id INTEGER DEFAULT NULL,
 					event_log_channel_id INTEGER DEFAULT NULL,
+		   			appeals_channel_id INTEGER DEFAULT NULL,
 					nonce_filter BOOLEAN DEFAULT 0,
 					bot_filter BOOLEAN DEFAULT 1,
 					on_message_delete BOOLEAN DEFAULT 1,
@@ -82,7 +83,11 @@ def create_guilds_table():
 					max_moderations_enabled BOOLEAN DEFAULT 0,
 					max_s1_moderations INTEGER DEFAULT 1,
 					max_s2_moderations INTEGER DEFAULT 4,
-					max_s3_moderations INTEGER DEFAULT 1
+					max_s3_moderations INTEGER DEFAULT 1,
+					appeals BOOLEAN DEFAULT 0,
+					appeals_message TEXT DEFAULT 0,
+					appeals_website_message TEXT DEFAULT 0,
+					appeals_poll BOOLEAN DEFAULT 1
 				)''')
 
 	c.execute("PRAGMA table_info(guilds)")
@@ -92,9 +97,10 @@ def create_guilds_table():
 		'nonce_filter': ["BOOLEAN", 0], 'bot_filter': ["BOOLEAN", 1], 'on_message_delete': ["BOOLEAN", 1], 
 		'on_message_edit': ["BOOLEAN", 1], 'on_member_join': ["BOOLEAN", 1], 'on_member_leave': ["BOOLEAN", 1],
 		'on_member_update': ["BOOLEAN", 1], 'on_guild_channel_create': ["BOOLEAN", 1], 'on_guild_channel_delete': ["BOOLEAN", 1],
-
-		'max_moderations_enabled': ["BOOLEAN", 0],
-		'max_s1_moderations': ["INTEGER", 1], 'max_s2_moderations': ["INTEGER", 4], 'max_s3_moderations': ["INTEGER", 1]
+		'max_moderations_enabled': ["BOOLEAN", 0], 'max_s1_moderations': ["INTEGER", 1], 'max_s2_moderations': ["INTEGER", 4],
+		'max_s3_moderations': ["INTEGER", 1], 'appeals': ["BOOLEAN", 0], 'appeals_channel_id': ["INTEGER", 0],
+		'appeals_message': ["TEXT", "'New ban appeal'"], 'appeals_website_message': ["TEXT", "'Please write in detail why you think you should be unbanned'"],
+		'appeals_poll': ["BOOLEAN", 1]
 	}
 
 	for column in new_columns:
@@ -106,7 +112,23 @@ def create_guilds_table():
 	conn.commit()
 	conn.close()
 
+def create_appeals_table():
+	conn, c = db_connect()
+
+	c.execute('''CREATE TABLE IF NOT EXISTS appeals (
+						appeal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+						guild_id INTEGER,
+						user_id INTEGER,
+						active BOOLEAN,
+						cooldown BOOLEAN,
+						time TEXT
+					)''')
+
+	conn.commit()
+	conn.close()
+
 create_guilds_table()
+create_appeals_table()
 create_moderation_table()
 
 def insert_moderation(guild_id: int, user_id: int, moderator_id: int, moderation_type: str, reason: str, severity: str, time: str, duration: str, conn: sqlite3.Connection, c: sqlite3.Cursor):

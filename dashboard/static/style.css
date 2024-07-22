@@ -94,6 +94,11 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	color: #383D49
 }
 
+.dash-textarea {
+	width: max-content;
+	resize: vertical;
+}
+
 @media (prefers-color-scheme: dark) {
 	.server-dash-text {
 		color: #FFFFFF

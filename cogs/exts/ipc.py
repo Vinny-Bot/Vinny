@@ -19,14 +19,17 @@
 # use my commits if you have received permission from me. <0vfx@proton.me>
 
 from typing import Dict
+import datetime
 import discord
-from discord import app_commands
+from discord import Emoji, app_commands
 from discord.ext import commands, ipc
 from discord.ext.ipc.server import Server
 from discord.ext.ipc.objects import ClientPayload
 from utils import utils
 import importlib
 import asyncio
+
+from utils import db
 
 class Routes(commands.Cog):
 	def __init__(self, bot: commands.Bot):
@@ -93,6 +96,52 @@ class Routes(commands.Cog):
 		if username is None:
 			username = data['id'].id
 		return username
+
+	@Server.route()
+	async def get_ban_status(self, data):
+		try:
+			user = await self.bot.fetch_user(data['user_id'])
+			guild = self.bot.get_guild(data['guild_id'])
+		except Exception as e:
+			print(e)
+			return repr(False)
+		try:
+			await guild.fetch_ban(user)
+			return repr(True)
+		except Exception:
+			return repr(False)
+		return repr(False)
+
+	@Server.route()
+	async def send_appeal_message(self, data):
+		try:
+			conn, c = db.db_connect()
+			config_data = utils.load_config()
+			user = await self.bot.fetch_user(data['user_id'])
+			guild = self.bot.get_guild(data['guild_id'])
+			appeal = data['appeal']
+			appeal_id = data['appeal_id']
+			embed = discord.Embed(title=f"{user.name}'s appeal - ID {appeal_id}", color=16753920, timestamp=datetime.datetime.now())
+			embed.add_field(name="User information", value=f"{user.mention}\n{user.name}\n{user.id}")
+			embed.add_field(name="Appeal", value=appeal, inline=False)
+			embed.set_footer(text=f"If you'd like to accept this ban appeal, run /accept_appeal appeal:{appeal_id}")
+			embed.set_thumbnail(url=user.avatar)
+			message = db.get_config_value(guild.id, "appeals_message", c, "New ban appeal")
+			appeals_channel_id = db.get_config_value(guild.id, "appeals_channel_id", c, 0)
+			poll = discord.Poll("Accept this ban appeal?", duration=datetime.timedelta(days=1.25))
+			poll.add_answer(text="Yes")
+			poll.add_answer(text="No")
+			channel = await self.bot.fetch_channel(appeals_channel_id)
+			await channel.send(content=message, embed=embed)
+			await asyncio.sleep(0.025)
+			await channel.send(poll=poll)
+			c.execute("SELECT appeal_id, guild_id, user_id, active, time FROM appeals WHERE guild_id=?", (guild.id,))
+			row = c.fetchall()
+			if len(row) <= 1:
+				await channel.send(content=f"-# Poll automatically created for this appeal\n-# The bot does not use data from this poll, the appeal will have to be accepted by a moderator\n-# If you'd like to disable this feature, you can do so [in the server dashboard]({config_data['dashboard']['url']}/dashboard/server/{guild.id}). This notice will only show up once")
+			conn.close()
+		except Exception as e:
+			print("Encountered error while sending the appeal:", e)
 
 	@app_commands.command(description="View moderations in this server")
 	async def server_moderations(self,interaction: discord.Interaction):

@@ -1,0 +1,44 @@
+<!-- 
+vinny - discord moderation bot
+Copyright (C) 2024 0vf
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+NOTE: If you wanna use my dashboard module/IPC extension without complying with above terms,
+then contact me for inquiries/questions for permission. You will only be able to
+use my commits if you have received permission from me. <0vfx@proton.me>
+-->
+
+{% extends "base.html" %}
+{% block content %}
+<div class="hero container">
+	<article class="message container">
+		<div class="message-header">
+			<p>{{ guild_name }} ban appeal form</p>
+			<p data-tooltip="Upon submission, your appeal will be shared with server moderators."><i class="fas fa-info-circle"></i></p>
+		</div>
+		<div class="message-body">
+			<p class="is-size-5.5">{{ server_message }}</p>
+			<br>
+			<form method="POST">
+				<div class="control">
+					<textarea class="textarea" type="text" name="appeal_text" placeholder="Type your appeal here"></textarea>
+				</div>
+				<br>
+				<button class="button is-fullwidth is-success" type="submit">Submit</button>
+			</form>
+		</div>
+	</article>
+</div>
+{% endblock %}

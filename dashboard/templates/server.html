@@ -64,6 +64,21 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					</div>
 				</div>
 			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label data-tooltip="Channel to send ban appeals to (staff chat recommended)" class="label">Appeal channel <i class="fas fa-info-circle"></i></label>
+					<div class="control">
+						<div class="select">
+							<select id="appeals_channel" name="appeals_channel">
+								<option value="0">None</option>
+								{% for id, name in guild_channels.items() %}
+									<option value="{{ id }}">{{ name }}</option>
+								{% endfor %}
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<div class="panel is-link">
 			<p class="panel-heading">Moderation configuration</p>
@@ -117,6 +132,48 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					</div>
 				</div>
 			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label class="label">Ban appeals</label>
+					<div class="control">
+						<div class="select">
+							<select id="appeals" name="appeals">
+								<option value="1">Enabled</option>
+								<option value="0">Disabled</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label data-tooltip="Message to display on the server's appeal page" class="label">Appeal website message <i class="fas fa-info-circle"></i></label>
+					<div class="control" style="width: 500px;">
+						<textarea class="textarea" id="appeals_website_message" name="appeals_website_message" type="text"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label data-tooltip="Content to display on the appeal message sent to the appeal channel alongside the embed" class="label">Appeal message <i class="fas fa-info-circle"></i></label>
+					<div class="control" style="width: 500px;">
+						<textarea class="textarea" id="appeals_message" name="appeals_message" type="text"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="panel-block">
+				<div class="field">
+					<label data-tooltip="The poll is not automatic, the appeal will have to be accepted manually" class="label">Automatically create an appeal poll <i class="fas fa-info-circle"></i><</label>
+					<div class="control">
+						<div class="select">
+							<select id="appeals_poll" name="appeals_poll">
+								<option value="1">Enabled</option>
+								<option value="0">Disabled</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<div class="panel is-warning">
 			<p class="panel-heading">Event configuration</p>
@@ -126,21 +183,22 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="bot_filter" name="bot_filter">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
 				</div>
 			</div>
+
 			<div class="panel-block">
 				<div class="field">
 					<label class="label">Log message edits</label>
 					<div class="control">
 						<div class="select">
 							<select id="on_message_edit" name="on_message_edit">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -152,8 +210,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="on_message_delete" name="on_message_delete">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -165,8 +223,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="on_member_join" name="on_member_join">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -178,8 +236,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="on_member_leave" name="on_member_leave">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -191,8 +249,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="on_member_update" name="on_member_update">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -217,8 +275,8 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<div class="control">
 						<div class="select">
 							<select id="on_guild_channel_delete" name="on_guild_channel_delete">
-								<option value="0">False</option>
 								<option value="1">True</option>
+								<option value="0">False</option>
 							</select>
 						</div>
 					</div>
@@ -243,6 +301,11 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 					<input type="hidden" id="db_max_s1_moderations" name="db_max_s1_moderations" value="{{ db_values['max_s1_moderations'] }}">
 					<input type="hidden" id="db_max_s2_moderations" name="db_max_s2_moderations" value="{{ db_values['max_s2_moderations'] }}">
 					<input type="hidden" id="db_max_s3_moderations" name="db_max_s3_moderations" value="{{ db_values['max_s3_moderations'] }}">
+					<input type="hidden" id="db_appeals" name="db_appeals" value="{{ db_values['appeals'] }}">
+					<input type="hidden" id="db_appeals_channel" name="db_appeals_channel" value="{{ db_values['appeals_channel_id'] }}">
+					<input type="hidden" id="db_appeals_message" name="db_appeals_message" value="{{ db_values['appeals_message'] }}">
+					<input type="hidden" id="db_appeals_website_message" name="db_appeals_website_message" value="{{ db_values['appeals_website_message'] }}">
+					<input type="hidden" id="db_appeals_poll" name="db_appeals_website_message" value="{{ db_values['appeals_poll'] }}">
 					<button type="submit" class="button is-primary">Save</button><br>
 					{% if saved == True %}
 						<span class="has-text-success is-vcentered" style="vertical-align: bottom;"><i class="icon fa-solid fa-square-check"></i>Successfully saved!</span>
@@ -284,6 +347,15 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 		toggleModerationInputs();
 	
 		$('#max_moderations_enabled').change(toggleModerationInputs);
+
+		function toggleAppealInputs() {
+			var isEnabled = $('#appeals').val() !== "0";
+			$('#appeals_message, #appeals_website_message, #appeals_poll').prop('disabled', !isEnabled);
+		}
+	
+		toggleAppealInputs();
+	
+		$('#appeals').change(toggleAppealInputs);
 	});	
 </script>
 {% endblock %}
