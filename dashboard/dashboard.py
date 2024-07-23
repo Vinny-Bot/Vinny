@@ -160,11 +160,14 @@ async def server_view(guild_id):
 		return redirect(f'https://discord.com/oauth2/authorize?&client_id={app.config["DISCORD_CLIENT_ID"]}&scope=bot&permissions=8&guild_id={guild_id}&response_type=code&redirect_uri={app.config["DISCORD_REDIRECT_URI"]}')
 
 	admin_bool = await ipc.request("check_admin", user_id=user.id, guild_id=guild_id)
-	admin_bool = literal_eval(admin_bool.response)
+	try:
+		admin_bool = literal_eval(admin_bool.response)
+	except Exception:
+		admin_bool = False
 	if admin_bool == True:
 		pass
 	elif admin_bool == False:
-		return "Invalid permissions", 403
+		abort(403)
 	else:
 		return redirect(f'https://discord.com/oauth2/authorize?&client_id={app.config["DISCORD_CLIENT_ID"]}&scope=bot&permissions=8&guild_id={guild_id}&response_type=code&redirect_uri={app.config["DISCORD_REDIRECT_URI"]}')
 
