@@ -23,6 +23,7 @@ import utils.db as db
 import datetime
 import humanfriendly
 import importlib
+import time
 
 class misc(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
@@ -69,6 +70,38 @@ class misc(commands.Cog):
 		timedelta = datetime.datetime.now(datetime.UTC) - self.bot.start_time
 		await interaction.response.send_message(content=f"{humanfriendly.format_timespan(timedelta)}")
 
+
+	@app_commands.command(description="Get time from host")
+	async def host_time(self,interaction: discord.Interaction):
+		today = datetime.date.today()
+		time_unix_stamp = int(time.time())
+		fulldate = time.ctime(time.time())
+		now = datetime.datetime.now()
+		local_now = now.astimezone()
+		local_tz = local_now.tzinfo
+		local_tzname = local_tz.tzname(local_now)
+		message_content = (
+			f"Date: {today} \n"
+			f"Time in Unix timestamp (sec. since epoch): {time_unix_stamp}  \n"
+			f"{fulldate} \n"
+			f"Host timezone (UTC): {local_tzname}"
+		)
+		await interaction.response.send_message(content=message_content)
+
+	@app_commands.command(description="Time until the Epochalypse of Y2K38")
+	async def epochalypse(self,interaction: discord.Interaction):
+		time_unix_stamp = int(time.time())
+		epochalypsetime = 2147483648
+		timeleft = epochalypsetime - time_unix_stamp
+		message_content1 = (
+			f"Current time in Unix timestamp: {time_unix_stamp} (UTC) <t:{time_unix_stamp}:f>\n"
+			f"Epochalypse timestamp: {epochalypsetime} <t:{epochalypsetime}:f> \n"
+			f"Seconds left until Epochalypse: **{timeleft}** <t:{epochalypsetime}:R> \n"
+			f"Human readable time left until Epochalypse: **{humanfriendly.format_timespan(timeleft)}**"
+		)
+
+		await interaction.response.send_message(content=message_content1)
+	
 async def setup(client):
 	importlib.reload(db)
 	importlib.reload(info)
