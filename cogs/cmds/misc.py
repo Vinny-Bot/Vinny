@@ -73,7 +73,7 @@ class misc(commands.Cog):
 
 	@app_commands.command(description="Get time from host")
 	async def host_time(self,interaction: discord.Interaction):
-		today = date.today()
+		today = datetime.date.today()
 		time_unix_stamp = int(time.time())
 		fulldate = time.ctime(time.time())
 		now = datetime.datetime.now()
