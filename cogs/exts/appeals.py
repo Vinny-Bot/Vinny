@@ -72,7 +72,7 @@ class appeals(commands.Cog):
 			user_id = row[1]
 			time_unix = float(row[3])
 			time_obj = datetime.datetime.fromtimestamp(time_unix)
-			updated_time = time_obj + datetime.timedelta(minutes=1)
+			updated_time = time_obj + datetime.timedelta(days=30)
 			results.append({
 				'guild_id': guild_id,
 				'user_id': user_id,
