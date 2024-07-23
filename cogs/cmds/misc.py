@@ -23,7 +23,6 @@ import utils.db as db
 import datetime
 import humanfriendly
 import importlib
-from datetime import date
 import time
 
 class misc(commands.Cog):
