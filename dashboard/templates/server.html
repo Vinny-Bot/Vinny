@@ -30,7 +30,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 	</div>
 	<br><br>
 	<div class="container hero">
-		<form method="POST" class="field">
+		<form method="POST" class="field" onsubmit="this.querySelectorAll('input').forEach(i => i.disabled = false)">
 		<div class="panel is-primary">
 			<p class="panel-heading">Channel configuration</p>
 			
@@ -163,7 +163,7 @@ use my commits if you have received permission from me. <0vfx@proton.me>
 			</div>
 			<div class="panel-block">
 				<div class="field">
-					<label data-tooltip="The poll is not automatic, the appeal will have to be accepted manually" class="label">Automatically create an appeal poll <i class="fas fa-info-circle"></i><</label>
+					<label data-tooltip="The poll is not automatic, the appeal will have to be accepted manually" class="label">Automatically create an appeal poll <i class="fas fa-info-circle"></i></label>
 					<div class="control">
 						<div class="select">
 							<select id="appeals_poll" name="appeals_poll">
