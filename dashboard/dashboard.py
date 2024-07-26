@@ -177,29 +177,31 @@ async def server_view(guild_id):
 	conn.commit()
 	if request.method == 'POST':
 		form_fields = {
-			"log_channel_id": request.form["log_channel"],
-			"event_log_channel_id": request.form["event_log_channel"],
-			"nonce_filter": int(request.form["nonce_filter"]),
-			"max_moderations_enabled": int(request.form["max_moderations_enabled"]),
-			"max_s1_moderations": int(request.form["max_s1_moderations"]),
-			"max_s2_moderations": int(request.form["max_s2_moderations"]),
-			"max_s3_moderations": int(request.form["max_s3_moderations"]),
-			"bot_filter": int(request.form["bot_filter"]),
-			"on_message_delete": int(request.form["on_message_delete"]),
-			"on_message_edit": int(request.form["on_message_edit"]),
-			"on_member_join": int(request.form["on_member_join"]),
-			"on_member_leave": int(request.form["on_member_leave"]),
-			"on_member_update": int(request.form["on_member_update"]),
-			"on_guild_channel_create": int(request.form["on_guild_channel_create"]),
-			"on_guild_channel_delete": int(request.form["on_guild_channel_delete"]),
-			"appeals": int(request.form["appeals"]),
-			"appeals_channel_id": request.form["appeals_channel"],
-			"appeals_message": request.form["appeals_message"],
-			"appeals_website_message": request.form["appeals_website_message"],
-			"appeals_poll": int(request.form["appeals_poll"])
+			"log_channel_id": request.form.get("log_channel"),
+			"event_log_channel_id": request.form.get("event_log_channel"),
+			"nonce_filter": int(request.form.get("nonce_filter", 0)),
+			"max_moderations_enabled": int(request.form.get("max_moderations_enabled", 0)),
+			"max_s1_moderations": int(request.form.get("max_s1_moderations", 0)),
+			"max_s2_moderations": int(request.form.get("max_s2_moderations", 0)),
+			"max_s3_moderations": int(request.form.get("max_s3_moderations", 0)),
+			"bot_filter": int(request.form.get("bot_filter", 0)),
+			"on_message_delete": int(request.form.get("on_message_delete", 0)),
+			"on_message_edit": int(request.form.get("on_message_edit", 0)),
+			"on_member_join": int(request.form.get("on_member_join", 0)),
+			"on_member_leave": int(request.form.get("on_member_leave", 0)),
+			"on_member_update": int(request.form.get("on_member_update", 0)),
+			"on_guild_channel_create": int(request.form.get("on_guild_channel_create", 0)),
+			"on_guild_channel_delete": int(request.form.get("on_guild_channel_delete", 0)),
+			"appeals": int(request.form.get("appeals", 0)),
+			"appeals_channel_id": request.form.get("appeals_channel"),
+			"appeals_message": request.form.get("appeals_message"),
+			"appeals_website_message": request.form.get("appeals_website_message"),
+			"appeals_poll": int(request.form.get("appeals_poll", 0))
 		}
 		for form in form_fields:
-			if form_fields[form] == 0 or form_fields[form] == 1 or form_fields[form] in guild_channels.response or form in ('max_s1_moderations', 'max_s2_moderations', 'max_s3_moderations', 'appeals_message', 'appeals_website_message'):
+			if form_fields[form] is None:
+				continue
+			elif form_fields[form] == 0 or form_fields[form] == 1 or form_fields[form] in guild_channels.response or form in ('max_s1_moderations', 'max_s2_moderations', 'max_s3_moderations', 'appeals_message', 'appeals_website_message'):
 				db.set_config_value(guild_id, form, form_fields[form], conn, c)
 		db_values = {}
 		defaults = {
