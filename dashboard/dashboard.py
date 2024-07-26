@@ -35,7 +35,7 @@ from utils import utils, db, info
 from ast import literal_eval
 from asyncio import sleep
 
-dashboard_version = "1.3.0"
+dashboard_version = "1.3.1"
 cached_usernames = {}
 
 app = Flask(__name__)
